@@ -1,12 +1,9 @@
-# Copyright (C) 2024 Intense Yazılım Ltd.
-# This file is distributed under the GPL2.
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Hezarfen For Woocommerce\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hezarfen-for-"
-"woocommerce\n"
-"POT-Creation-Date: 2024-05-30 10:43+0000\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-03-12 12:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -16,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.6.9; wp-6.4.3\n"
+"X-Loco-Version: 2.6.9; wp-6.5.5\n"
 "X-Domain: hezarfen-for-woocommerce"
 
 #. %s plugin name
@@ -51,7 +48,7 @@ msgstr ""
 msgid "Are you sure you want to remove this shipment data?"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:216
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:224
 msgid "Auto sort fields in checkout form?"
 msgstr ""
 
@@ -59,7 +56,8 @@ msgstr ""
 msgid "Available Variables"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:151
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:159
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:369
 msgid ""
 "Back up the phrase in the box to a safe area, then place it in wp-config.php "
 "file."
@@ -69,7 +67,7 @@ msgstr ""
 msgid "BCC"
 msgstr ""
 
-#: includes/class-hezarfen.php:136
+#: includes/class-hezarfen.php:137
 msgid ""
 "Because the Woocommerce Checkout Blocks feature is active on your website, "
 "<strong>Hezarfen for Woocommerce</strong> plugin doesn't work on the "
@@ -98,23 +96,23 @@ msgstr ""
 msgid "CDEK"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:42
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:44
 msgid "Checkout Page Settings"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:193
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:201
 msgid "Checkout Settings"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:273
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:281
 msgid "Checkout T.C. Identity Number Fields Required Statuses"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:47
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:49
 msgid "Checkout Tax Fields"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:246
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:254
 msgid "Checkout Tax Fields Settings"
 msgstr ""
 
@@ -129,7 +127,7 @@ msgstr ""
 msgid "Choose a courier company"
 msgstr ""
 
-#: includes/Checkout.php:329 includes/admin/order/OrderDetails.php:49
+#: includes/Checkout.php:350 includes/admin/order/OrderDetails.php:49
 msgid "Company"
 msgstr ""
 
@@ -152,7 +150,7 @@ msgstr ""
 msgid "DHL"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:187
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:195
 msgid ""
 "Disable the Checkout Field Editor for WooCommerce plugin to use this setting."
 msgstr ""
@@ -171,15 +169,15 @@ msgstr ""
 msgid "Enable SMS notification when order shipped"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:41
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:43
 msgid "Encryption"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:141
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:149
 msgid "Encryption Key"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:157
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:165
 msgid "Encryption Key Confirmation"
 msgstr ""
 
@@ -187,11 +185,20 @@ msgstr ""
 msgid "Encryption Key Health"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:129
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:55
+msgid "Encryption Key Recovery"
+msgstr ""
+
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:326
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:347
+msgid "Encryption Key Recovery Screen"
+msgstr ""
+
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:137
 msgid "Encryption Settings"
 msgstr ""
 
-#: includes/Checkout.php:352
+#: includes/Checkout.php:373
 msgid "Enter invoice title"
 msgstr ""
 
@@ -211,15 +218,15 @@ msgstr ""
 msgid "Enter SMS content."
 msgstr ""
 
-#: includes/Checkout.php:337
+#: includes/Checkout.php:358
 msgid "Enter T.C. Identity Number"
 msgstr ""
 
-#: includes/Checkout.php:363
+#: includes/Checkout.php:384
 msgid "Enter tax number"
 msgstr ""
 
-#: includes/Checkout.php:373
+#: includes/Checkout.php:394
 msgid "Enter tax office"
 msgstr ""
 
@@ -227,9 +234,13 @@ msgstr ""
 msgid "Enter Tracking Information"
 msgstr ""
 
-#: includes/Checkout.php:142 includes/Checkout.php:173
-#: includes/Checkout.php:176
+#: includes/Checkout.php:163 includes/Checkout.php:194
+#: includes/Checkout.php:197
 msgid "Enter your street, avenue, building, and apartment number information."
+msgstr ""
+
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:331
+msgid "Everything seems fine."
 msgstr ""
 
 #: packages/manual-shipment-tracking/includes/courier-companies/class-fedex.php:38
@@ -248,11 +259,11 @@ msgstr ""
 msgid "Gelal"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:40
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:42
 msgid "General"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:61
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:69
 msgid "General Settings"
 msgstr ""
 
@@ -285,11 +296,11 @@ msgid ""
 "amaçlar."
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:93
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:101
 msgid "Hide postcode fields in My Account > Address pages?"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:205
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:213
 msgid "Hide postcode fields?"
 msgstr ""
 
@@ -301,14 +312,21 @@ msgstr ""
 msgid "http://intense.com.tr"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:162
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:170
 msgid ""
 "I backed up the key to a secure area and placed it in the wp-config file. In "
 "case the encryption key value is deleted from the wp-config.php file, all "
 "past orders will be transferred to T.C. I know I cannot access ID data."
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:134
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:377
+msgid ""
+"I understand and agree that I can't acces the TC ID data of the old orders "
+"by using this new encryption key. I backed up the phrase in the box to a "
+"safe area, and I placed it in wp-config.php file."
+msgstr ""
+
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:142
 msgid ""
 "If the T.C. Identity Field is active, an encryption key must be generated. "
 "The following encryption key generated will be lost upon saving the form. "
@@ -337,7 +355,7 @@ msgstr ""
 msgid "In order to %1$s integration work, the %2$s plugin must be activated."
 msgstr ""
 
-#: includes/class-hezarfen.php:120
+#: includes/class-hezarfen.php:121
 msgid ""
 "In order to <strong>Hezarfen for WooCommerce</strong> plugin work, please "
 "remove the <strong>Intense Türkiye İl İlçe Eklentisi For WooCommerce</strong>"
@@ -370,7 +388,7 @@ msgstr ""
 msgid "Intense Yazılım Ltd."
 msgstr ""
 
-#: includes/Checkout.php:323
+#: includes/Checkout.php:344
 msgid "Invoice Type"
 msgstr ""
 
@@ -378,7 +396,7 @@ msgstr ""
 msgid "Invoice type"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:277
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:285
 msgid "Is T.C. Identity Number field required?"
 msgstr ""
 
@@ -431,12 +449,16 @@ msgstr ""
 msgid "MNG Kargo"
 msgstr ""
 
-#: includes/class-hezarfen.php:76 includes/Checkout.php:506
+#: includes/class-hezarfen.php:77 includes/Checkout.php:524
 msgid "Neighborhood"
 msgstr ""
 
 #: packages/manual-shipment-tracking/includes/admin/class-settings.php:152
 msgid "NetGSM SMS content"
+msgstr ""
+
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:359
+msgid "New Encryption Key"
 msgstr ""
 
 #: includes/admin/settings/views/encryption.php:48
@@ -476,8 +498,12 @@ msgstr ""
 msgid "PandaSMS plugin is successfully installed and activated."
 msgstr ""
 
-#: includes/Checkout.php:328 includes/admin/order/OrderDetails.php:48
+#: includes/Checkout.php:349 includes/admin/order/OrderDetails.php:48
 msgid "Personal"
+msgstr ""
+
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:439
+msgid "Please place the encryption key in the wp-config.php file."
 msgstr ""
 
 #: packages/manual-shipment-tracking/includes/courier-companies/class-ptt.php:38
@@ -515,7 +541,7 @@ msgid "Select a Courier Company"
 msgstr ""
 
 #: includes/Autoload.php:99 includes/class-hezarfen-wc-helper.php:24
-#: includes/class-hezarfen.php:77
+#: includes/class-hezarfen.php:78
 msgid "Select an option"
 msgstr ""
 
@@ -567,7 +593,7 @@ msgid_plural "Shipped (Kargo Takip Turkiye Plugin) (%s)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:73
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:81
 msgid "Show hezarfen checkout tax fields?"
 msgstr ""
 
@@ -584,7 +610,7 @@ msgstr ""
 msgid "Show Shipment Tracking column on My Account > Orders page"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:259
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:267
 msgid "Show T.C. Identity Field on checkout page "
 msgstr ""
 
@@ -596,7 +622,7 @@ msgstr ""
 msgid "SMS Notification Settings"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:83
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:91
 msgid "Sort address fields in My Account > Address pages?"
 msgstr ""
 
@@ -604,30 +630,30 @@ msgstr ""
 msgid "Sürat Kargo"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:264
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:272
 msgid ""
 "T.C. Identity Field optionally shows on checkout field when invoice type "
 "selected as person. (T.C. field requires encryption. If encryption is not "
 "enabled, this field is not displayed.)"
 msgstr ""
 
-#: includes/Checkout.php:338 includes/admin/order/OrderDetails.php:89
+#: includes/Checkout.php:359 includes/admin/order/OrderDetails.php:89
 msgid "T.C. Identity Number"
 msgstr ""
 
-#: includes/Checkout.php:362 includes/admin/order/OrderDetails.php:55
+#: includes/Checkout.php:383 includes/admin/order/OrderDetails.php:55
 msgid "Tax Number"
 msgstr ""
 
-#: includes/Checkout.php:445
+#: includes/Checkout.php:463
 msgid "Tax number is not valid"
 msgstr ""
 
-#: includes/Checkout.php:372 includes/admin/order/OrderDetails.php:60
+#: includes/Checkout.php:393 includes/admin/order/OrderDetails.php:60
 msgid "Tax Office"
 msgstr ""
 
-#: includes/Checkout.php:436
+#: includes/Checkout.php:456
 msgid "TC ID number is not valid"
 msgstr ""
 
@@ -635,7 +661,16 @@ msgstr ""
 msgid "There are no tracking numbers added to the tracking list."
 msgstr ""
 
-#: includes/Checkout.php:351
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:352
+msgid ""
+"This page allows you to generate a new encryption key. Before proceeding, "
+"please create a complete website backup. We do not provide support for this "
+"feature nor assume any responsibility for potential data loss or damage that "
+"may occur. Use of this feature is entirely at your own risk, even if you "
+"have created backups. By continuing, you acknowledge and accept these terms."
+msgstr ""
+
+#: includes/Checkout.php:372
 msgid "Title"
 msgstr ""
 
@@ -643,7 +678,7 @@ msgstr ""
 msgid "TNT"
 msgstr ""
 
-#: includes/class-hezarfen.php:69 includes/Checkout.php:489
+#: includes/class-hezarfen.php:70 includes/Checkout.php:507
 msgid "Town / City"
 msgstr ""
 
@@ -718,23 +753,23 @@ msgstr ""
 msgid "Yes"
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:66
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:74
 msgid "You can edit the general settings from this page."
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:198
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:206
 msgid "You can set general checkout settings."
 msgstr ""
 
-#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:251
+#: includes/admin/settings/class-hezarfen-settings-hezarfen.php:259
 msgid ""
 "You can update the checkout Tax fields. Note: T.C. number field requires "
 "encryption feature. If you do not activate the encryption feature, T.C. "
 "number field does not appear on the checkout."
 msgstr ""
 
-#: includes/Checkout.php:141 includes/Checkout.php:172
-#: includes/Checkout.php:175
+#: includes/Checkout.php:162 includes/Checkout.php:193
+#: includes/Checkout.php:196
 msgid "Your Address"
 msgstr ""
 

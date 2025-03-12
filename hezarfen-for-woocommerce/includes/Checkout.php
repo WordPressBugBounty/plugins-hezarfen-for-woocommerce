@@ -113,6 +113,27 @@ class Checkout {
 			10,
 			2
 		);
+
+		add_filter('woocommerce_form_field_text', array(__CLASS__, 'filter_tc_number_field'), 10, 4);
+	}
+
+	/**
+	 * Filter the TC number field to clear invalid values
+	 */
+	public static function filter_tc_number_field($field, $key, $args, $value) {
+		// Only process the TC number field
+		if ($key === 'billing_hez_TC_number') {
+			// Get the actual TC number (may need to decrypt it first)
+			$tc_id_number = $value;
+			// Check if the TC number is invalid
+			if ($tc_id_number &&  (11 !== strlen($tc_id_number) || !is_numeric($tc_id_number))) {
+
+				// Replace the value attribute in the HTML with an empty string
+				$field = preg_replace('/value="[^"]*"/', 'value=""', $field);
+			}
+		}
+
+		return $field;
 	}
 
 	/**
@@ -218,7 +239,7 @@ class Checkout {
 			? true
 			: false;
 
-		if ( ! $show || ! ( new PostMetaEncryption() )->test_the_encryption_key() ) {
+		if ( ! $show || ! ( new PostMetaEncryption() )->health_check() ) {
 			return false;
 		}
 
@@ -403,10 +424,7 @@ class Checkout {
 	public function override_posted_data( $data ) {
 		// Check if the T.C. Identitiy Field is active.
 		if ( ! empty( $data['billing_hez_TC_number'] ) && $this->hezarfen_show_hezarfen_checkout_tax_fields && self::is_show_identity_field_on_checkout() ) {
-			if (
-				( new PostMetaEncryption() )->health_check() &&
-				( new PostMetaEncryption() )->test_the_encryption_key()
-			) {
+			if ( ( new PostMetaEncryption() )->health_check() ) {
 				// Encrypt the T.C. Identity fields.
 				$data['billing_hez_TC_number'] = ( new PostMetaEncryption() )->encrypt(
 					$data['billing_hez_TC_number']
@@ -431,12 +449,12 @@ class Checkout {
 	public function validate_posted_data( $data, $errors ) {
 		$tc_id_number = ! empty( $data['billing_hez_TC_number'] ) ? ( new PostMetaEncryption() )->decrypt( $data['billing_hez_TC_number'] ) : '';
 
+		$invoice_type = array_key_exists( 'billing_hez_invoice_type', $_POST ) ? sanitize_key( $_POST['billing_hez_invoice_type'] ) : '';
+
 		// extend here to cover only number validaiton check for the TC ID number.
-		if ( $tc_id_number && ( 11 !== strlen( $tc_id_number ) || ! is_numeric( $tc_id_number ) ) ) {
+		if ( 'person' === $invoice_type && $tc_id_number && ( 11 !== strlen( $tc_id_number ) || ! is_numeric( $tc_id_number ) ) ) {
 			$errors->add( 'billing_hez_TC_number_validation', '<strong>' . __( 'TC ID number is not valid', 'hezarfen-for-woocommerce' ) . '</strong>', array( 'id' => 'billing_hez_TC_number' ) );
 		}
-
-		$invoice_type = array_key_exists( 'billing_hez_invoice_type', $_POST ) ? sanitize_key( $_POST['billing_hez_invoice_type'] ) : '';
 
 		if( 'company' === $invoice_type ) {
 			$tax_number = array_key_exists( 'billing_hez_tax_number', $_POST ) ? sanitize_text_field( $_POST['billing_hez_tax_number'] ) : '';
