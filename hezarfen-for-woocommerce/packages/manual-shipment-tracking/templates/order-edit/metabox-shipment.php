@@ -44,6 +44,42 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                             <label for="tracking-num-input" class="font-light text-gray-1 block mb-2 text-sm dark:text-white"><?php esc_html_e('Tracking Number', 'hezarfen-for-woocommerce'); ?></label>
                             <input type="text" id="tracking-num-input" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-3 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
                         </div>
+                        
+                        <!-- Smart Feedback Request Message -->
+                        <div id="hezarfen-feedback-request" class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm" style="display: none;">
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-sm font-medium text-blue-900 mb-1">
+                                        <?php esc_html_e('⭐ Love Hezarfen?', 'hezarfen-for-woocommerce'); ?>
+                                    </h4>
+                                    <p class="text-sm text-blue-700 mb-3">
+                                        <?php esc_html_e('We noticed you\'re using our manual tracking feature! If Hezarfen has helped your store, please consider leaving a review on WordPress.org. Your feedback helps other store owners discover our plugin.', 'hezarfen-for-woocommerce'); ?>
+                                    </p>
+                                    <div class="flex items-center space-x-3">
+                                        <a href="https://wordpress.org/support/plugin/hezarfen-for-woocommerce/reviews/#new-post" target="_blank" id="hezarfen-review-positive" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 border border-green-200 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <?php esc_html_e('Leave a Review', 'hezarfen-for-woocommerce'); ?>
+                                        </a>
+                                        <button type="button" id="hezarfen-feedback-dismiss" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 border border-gray-200 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200">
+                                            <?php esc_html_e('Maybe Later', 'hezarfen-for-woocommerce'); ?>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" id="hezarfen-feedback-close" class="flex-shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="mb-2">
                             <label class="font-light text-gray-1 block mb-2 text-sm dark:text-white"><?php esc_html_e('Select a Courier Company', 'hezarfen-for-woocommerce'); ?></label>
                             <ul id="shipping-companies" class="max-h-24 grid w-full gap-2 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 5xl:grid-cols-7 6xl:grid-cols-8 overflow-hidden transition-max-height duration-300 ease-in-out">
@@ -53,7 +89,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                     <li class="flex justify-center">
                                         <input type="radio" id="courier-company-select-<?php echo esc_attr($courier_id); ?>" name="courier-company-select" value="<?php echo esc_attr($courier_id); ?>" class="hidden peer" />
                                         <label for="courier-company-select-<?php echo esc_attr($courier_id); ?>" class="flex justify-center h-12 items-center justify-between w-full p-5 text-gray-3 bg-white border border-gray-3 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-3 dark:peer-checked:text-blue-500 peer-checked:bg-orange-1 peer-checked:border-2 peer-checked:border-orange-2 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-orange-1 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                            <img class="max-h-8" src="<?php echo esc_attr(HEZARFEN_MST_COURIER_LOGO_URL . Helper::get_courier_class($courier_id)::$logo); ?>" />
+                                            <img class="max-h-8" src="<?php echo esc_attr(HEZARFEN_MST_COURIER_LOGO_URL . Helper::get_courier_class($courier_id)::$logo); ?>" loading="lazy" alt="<?php echo esc_attr($courier_label); ?>" />
                                         </label>
                                     </li>
                                 <?php endforeach; ?>
@@ -87,7 +123,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                             <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 20">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m13 19-6-5-6 5V2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17Z" />
                             </svg>
-                            <p class="text-black text-lg"><?php esc_html_e('Nothing to Track Yet', 'hezarfen-for-woocommerce'); ?></p>
+                            <p class="text-black text-lg text-center"><?php esc_html_e('Nothing to Track Yet', 'hezarfen-for-woocommerce'); ?></p>
                             <div class="text-center">
                                 <p class="text-gray-1 font-light"><?php esc_html_e('There are no tracking numbers added to the tracking list.', 'hezarfen-for-woocommerce'); ?></p>
                             </div>
@@ -172,31 +208,31 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                         <li class="flex justify-center">
                                             <input type="radio" id="hez-pro-courier-company-select-hepsijet" name="hez-pro-courier-company-select" value="hepsijet" class="hidden peer">
                                             <label for="hez-pro-courier-company-select-hepsijet" class="flex justify-center h-12 items-center justify-between w-full p-5 text-gray-3 bg-white border border-gray-3 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-3 dark:peer-checked:text-blue-500 peer-checked:bg-orange-1 peer-checked:border-2 peer-checked:border-orange-2 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-orange-1 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/hepsijet-logo.svg">
+                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/hepsijet-logo.svg" loading="lazy" alt="Hepsijet Logo">
                                             </label>
                                         </li>
                                         <li class="flex justify-center">
                                             <input type="radio" id="hez-pro-courier-company-select-mng" name="hez-pro-courier-company-select" value="mng" class="hidden peer">
                                             <label for="hez-pro-courier-company-select-mng" class="flex justify-center h-12 items-center justify-between w-full p-5 text-gray-3 bg-white border border-gray-3 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-3 dark:peer-checked:text-blue-500 peer-checked:bg-orange-1 peer-checked:border-2 peer-checked:border-orange-2 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-orange-1 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/mng-logo.svg">
+                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/mng-logo.svg" loading="lazy" alt="MNG Logo">
                                             </label>
                                         </li>
                                         <li class="flex justify-center">
                                             <input type="radio" id="hez-pro-courier-company-select-yurtici" name="hez-pro-courier-company-select" value="yurtici" class="hidden peer">
                                             <label for="hez-pro-courier-company-select-yurtici" class="flex justify-center h-12 items-center justify-between w-full p-5 text-gray-3 bg-white border border-gray-3 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-3 dark:peer-checked:text-blue-500 peer-checked:bg-orange-1 peer-checked:border-2 peer-checked:border-orange-2 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-orange-1 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/yurtici-logo.svg">
+                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/yurtici-logo.svg" loading="lazy" alt="Yurtiçi Logo">
                                             </label>
                                         </li>
                                         <li class="flex justify-center">
                                             <input type="radio" id="hez-pro-courier-company-select-sendeo" name="hez-pro-courier-company-select" value="sendeo" class="hidden peer">
                                             <label for="hez-pro-courier-company-select-sendeo" class="flex justify-center h-12 items-center justify-between w-full p-5 text-gray-3 bg-white border border-gray-3 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-3 dark:peer-checked:text-blue-500 peer-checked:bg-orange-1 peer-checked:border-2 peer-checked:border-orange-2 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-orange-1 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/sendeo-logo.svg">
+                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/sendeo-logo.svg" loading="lazy" alt="Sendeo Logo">
                                             </label>
                                         </li>
                                         <li class="flex justify-center">
                                             <input type="radio" id="hez-pro-courier-company-select-aras" name="hez-pro-courier-company-select" value="aras" class="hidden peer">
                                             <label for="hez-pro-courier-company-select-aras" class="flex justify-center h-12 items-center justify-between w-full p-5 text-gray-3 bg-white border border-gray-3 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-3 dark:peer-checked:text-blue-500 peer-checked:bg-orange-1 peer-checked:border-2 peer-checked:border-orange-2 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-orange-1 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/aras-logo.png">
+                                                <img class="max-h-12" src="http://hezarfen.test/wp-content/plugins/hezarfen-for-woocommerce/packages/manual-shipment-tracking/assets/img/courier-companies/aras-logo.png" loading="lazy" alt="Aras Logo">
                                             </label>
                                         </li>
                                     </ul>

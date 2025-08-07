@@ -77,7 +77,7 @@ class Admin_Orders {
 				} else {
 					$courier = Helper::get_courier_class( $shipment_data[0]->courier_id );
 					if ( $courier::$logo ) {
-						printf( '<img src="%s" class="courier-logo">', esc_url( HEZARFEN_MST_COURIER_LOGO_URL . $courier::$logo ) );
+						printf( '<img src="%s" class="courier-logo" loading="lazy" alt="%s">', esc_url( HEZARFEN_MST_COURIER_LOGO_URL . $courier::$logo ), esc_attr( $courier::get_title( $order_id ) ) );
 					} else {
 						printf( '<p>%s</p>', esc_html( $courier::get_title( $order_id ) ) );
 					}
@@ -137,6 +137,7 @@ class Admin_Orders {
 				'duplicate_btn_tooltip_text'  => __( 'Add new shipment', 'hezarfen-for-woocommerce' ),
 				'modal_btn_delete_text'       => __( 'Delete', 'hezarfen-for-woocommerce' ),
 				'modal_btn_cancel_text'       => __( 'Cancel', 'hezarfen-for-woocommerce' ),
+				'thank_you_message'           => __( 'Thank you for supporting Hezarfen! 🌟', 'hezarfen-for-woocommerce' ),
 				'courier_logo_base_url'       => HEZARFEN_MST_COURIER_LOGO_URL,
 				'remove_shipment_data_action' => Admin_Ajax::REMOVE_SHIPMENT_DATA_ACTION,
 				'remove_shipment_data_nonce'  => wp_create_nonce( Admin_Ajax::REMOVE_SHIPMENT_DATA_NONCE ),
