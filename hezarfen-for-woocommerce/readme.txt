@@ -6,45 +6,43 @@ Requires at least: 5.3
 Tested up to: 6.8
 Requires PHP: 7.0
 License: GPL2
-Stable tag: 2.3.7
+Stable tag: 2.4.1
 
-Türkiye'nin lider WooCommerce kargo çözümü! 26+ yerli kargo firması desteği, otomatik takip, SMS bildirimleri ve Türkiye'ye özel e-ticaret özellikleri
+Türkiye'nin lider WooCommerce kargo çözümü! 23 kargo firması, SMS otomasyonu, il/ilçe/mahalle, TC kimlik ve vergi alanları desteği.
 
 == Description ==
 
-**Hezarfen**, WooCommerce mağazanızı Türkiye e-ticaret standartlarına uygun hale getiren kapsamlı bir kargo ve ödeme yönetim eklentisidir. 26 farklı kargo firmasıyla çalışabilir, müşterilerinize profesyonel kargo takip deneyimi sunar ve Türkiye'ye özgü fatura/vergi işlemlerini kolaylaştırır.
+**Hezarfen**, WooCommerce mağazanızı Türkiye e-ticaret standartlarına uygun hale getiren kapsamlı bir kargo ve ödeme yönetim eklentisidir. Bu WooCommerce kargo entegrasyonu eklentisi, 23 farklı kargo firmasıyla çalışabilir, müşterilerinize profesyonel WooCommerce kargo takip deneyimi sunar ve Türkiye'ye özgü mahalle, fatura ve vergi alanlarıyla ödeme ekranınızı Türkiye'ye uyumlu hale getirir.
 
 = 🚀 NEDEN HEZARFEN? =
 
-✅ **Zaman Tasarrufu**: Manuel kargo işlemlerinizi otomatikleştirin
-✅ **Müşteri Memnuniyeti**: SMS ve e-posta bildirimleriyle müşterilerinizi bilgilendirin
-✅ **Türkiye'ye Özel**: İl/ilçe/mahalle seçimi, TC kimlik no, vergi bilgileri
-✅ **Tek Eklenti**: 26 kargo firması tek eklentide
-✅ **Kolay Kullanım**: Kurulum sonrası hemen kullanmaya başlayın
+✅ **Zaman Tasarrufu**: Manuel kargo işlemlerinizi otomatikleştirin, sipariş takibi kolaylaştırın
+✅ **Müşteri Memnuniyeti**: WooCommerce SMS eklentisi ile SMS bilgilendirme ve e-posta bildirimleriyle müşterilerinizi bilgilendirin
+✅ **Türkiye'ye Özel**: İl/ilçe/mahalle seçimi, TC No doğrulama, vergi ekleme ve vergi bilgileri
+✅ **Tek Entegratör**: 23 kargo firması tek eklentide, kapsamlı kargo sistemi
+✅ **Kolay Kullanım**: Kurulum sonrası hemen kullanmaya başlayın, sözleşme gerektirmez
 
 = 📦 DESTEKLENEN KARGO FİRMALARI =
 
 **Popüler Kargo Firmaları:**
-• Aras Kargo • DHL E-Commerce • Yurtiçi Kargo • PTT Kargo • Sürat Kargo 
 • HepsiJET • Trendyol Express • Kolay Gelsin • Sendeo Kargo
-
-**Uluslararası Kargo:**
+• Aras Kargo • DHL E-Commerce (MNG) • Yurtiçi Kargo • PTT Kargo • Sürat Kargo 
 • DHL • FedEx • UPS • TNT • CDEK
-
-**Diğer Kargo Firmaları:**
 • Birgünde Kargo • Brinks Kargo • Gelal • Horoz Lojistik • Jetizz 
 • Kargo Türk • Kargoist • Kurye • PackUpp • Scotty
 
-**Toplam 26 Kargo Firması Desteği**
+**Toplam 23 Kargo Firması Desteği**
 
 = ⭐ ÜCRETSİZ ÖZELLİKLER =
 
-**🚚 Kargo Yönetimi**
-• Manuel kargo takip numarası girişi
-• "Kargoya Verildi" sipariş durumu
-• Müşteri panelinde detaylı kargo görüntüleme
-• Otomatik e-posta bildirimleri
-• SMS entegrasyonu (NetGSM ve PandaSMS)
+**🚚 Kargo Yönetimi ve WooCommerce Kargo Takip Modülü**
+• Manuel kargo takip numarası girişi ve sipariş yönetimi
+• "Kargoya Verildi" sipariş durumu ve gönderi takibi
+• Müşteri panelinde detaylı kargo görüntüleme ve sipariş takibi
+• Otomatik e-posta bildirimleri ve iade süreç yönetimi
+• **YENİ: SMS Otomasyonu** - NetGSM ve PandaSMS ile gelişmiş otomatik SMS bildirimleri
+• SMS entegrasyonu ile Kargoya Verildi ve tüm sipariş durumlarında özelleştirilebilir SMS bilgilendirme
+• Intense WooCommerce Mesafeli Satış Sözleşmesi Eklentisiyle tam uyumluluk (otomatik olarak kurumsal/bireysel vergi alanlarını çeker.)
 
 **🏠 Türkiye'ye Özel Çözümler**
 • İlçe/Mahalle seçim alanları
@@ -52,34 +50,21 @@ Türkiye'nin lider WooCommerce kargo çözümü! 26+ yerli kargo firması deste�
 • Ödeme formunu Türkiye standartlarına göre otomatik sıralama
 • Adres alanlarının optimize edilmesi
 
-**💼 Fatura ve Vergi Özellikleri**
+**💼 Fatura Alan Özellikleri**
 • Kurumsal/Bireysel fatura seçimi
-• T.C. Kimlik No alanı (şifreli saklama)
-• Vergi no ve vergi dairesi alanları
-• 11 haneli TC kimlik no doğrulaması
-• Vergi numarası format kontrolü
+• TC No alanı (şifreli saklama) ve TC kimlik doğrulama
+• Vergi no ve vergi dairesi alanları, vergi ekleme sistemi
+• 11 haneli TC kimlik no doğrulaması ve TC No kontrolü
 
 **🔒 Güvenlik**
 • T.C. Kimlik numaralarının şifrelenerek saklanması
 • Güvenli anahtar yönetimi
 
-= 💎 PRO ÖZELLİKLER =
+= ⚡ Performans =
+Hezarfen, yetkin bir ekip tarafından geliştirilmiştir. Ekibimiz, dünyanın en çok kullanılan WordPress tema ve eklentilerinin geliştirilmesinde geçmişte görev almış deneyimli yazılımcılardan oluşur. Bu birikim, eklentinin yüksek performans, stabilite ve ölçeklenebilirlik sunmasını sağlar.
 
-**🔄 Otomatik Kargo Entegrasyonu**
-• 5 büyük kargo firması ile direkt entegrasyon (Yurtiçi, DHL E-Commerce, Aras, Kolay Gelsin, HepsiJET)
-• Otomatik barkod oluşturma
-• Takip numaralarının otomatik girilmesi
-• Sipariş durumlarının otomatik güncellenmesi
-• Toplu kargo gönderimi
-* Otomatik kargo takip SMS'i gönderilmesi
-
-**📊 Paraşüt Muhasebe Entegrasyonu**
-• Siparişlerin otomatik faturalandırılması
-• Ürünlerin Paraşüt'e otomatik aktarımı
-• Stok senkronizasyonu
-• Müşteri bilgilerinin senkronizasyonu
-
-**Pro sürümü satın almak için:** [intense.com.tr/urun/hezarfen-pro](https://intense.com.tr/urun/hezarfen-pro/)
+= 🛡️ KVKK Uyumluluğu =
+Hezarfen, KVKK’nın yurt dışına kişisel veri aktarımına ilişkin hükümleriyle uyumludur. Bilinen bazı kargo SaaS çözümleri kargo müşteri verilerini yurtdışına taşıyabilirken (sunucularının yurtdışında olması sebebiyle), Hezarfen verilerinizi Türkiye sınırları içinde tutar ve uyumluluk yükümlülüklerinizi destekler.
 
 == Installation ==
 
@@ -102,14 +87,14 @@ Türkiye'nin lider WooCommerce kargo çözümü! 26+ yerli kargo firması deste�
 
 == Frequently Asked Questions ==
 
-= Eklenti tamamen ücretsiz mi? =
-Evet, temel özellikler tamamen ücretsizdir. 26 kargo firması için manuel takip, il/ilçe/mahalle seçimi, TC kimlik no alanı gibi özellikler ücretsiz sunulmaktadır. Pro özellikleri (otomatik entegrasyon, Paraşüt bağlantısı) ücretlidir.
+= Bu WooCommerce eklentisi tamamen ücretsiz mi? =
+Evet, yukarıda listelenen özellikler tamamen ücretsizdir. 23 kargo firması için manuel takip, WooCommerce kargo takip modülü, il/ilçe/mahalle seçimi, TC kimlik no alanı gibi özellikler ücretsiz sunulmaktadır. Pro özellikleri (otomatik kargo entegrasyonu, Paraşüt e-arşiv/e-fatura entegrasyonu) ücretlidir. En iyi WooCommerce eklentileri arasında yer alan bu çözüm.
 
 = Hangi WooCommerce sürümleriyle uyumlu? =
 WooCommerce 5.0 ve üzeri tüm sürümlerle uyumludur. HPOS (High Performance Order Storage) desteği mevcuttur.
 
-= Kargo takip özelliğini nasıl kullanabilirim? =
-Eklentiyi aktifleştirdikten sonra, WooCommerce > Ayarlar > Hezarfen > Manuel Kargo Takip menüsünden kullanmak istediğiniz kargo firmalarını seçin. Sipariş detayında kargo takip numarasını girebilir ve müşterilerinize otomatik bildirim gönderebilirsiniz.
+= WooCommerce kargo takip özelliğini nasıl kullanabilirim? =
+Otomatik olarak aktif ediliyor, hiçbir ayar yapmanıza gerek yok, sipariş düzenleme ekranında görebilirsiniz. Bu WooCommerce kargo takip modülünü dilediğiniz zaman WooCommerce > Ayarlar > Hezarfen > Manuel Kargo Takip menüsünden yönetebilirsiniz. Sipariş detayında kargo takip numarasını girebilir, sipariş takibi yapabilir ve müşterilerinize otomatik bildirim gönderebilirsiniz.
 
 = T.C. Kimlik numarası alanı neden görünmüyor? =
 T.C. Kimlik numarası alanının görünmesi için şifreleme özelliğinin aktif edilmesi gerekir. WooCommerce > Ayarlar > Hezarfen > Şifreleme (Encryption) menüsünden bu özelliği aktifleştirebilirsiniz.
@@ -117,8 +102,8 @@ T.C. Kimlik numarası alanının görünmesi için şifreleme özelliğinin akti
 = İl/ilçe/mahalle verileri nereden geliyor? =
 Tüm il/ilçe/mahalle verileri eklenti içerisinde yer almaktadır. İnternet bağlantısı veya harici bir servise ihtiyaç duymaz, tamamen offline çalışır.
 
-= SMS bildirimleri nasıl gönderilir? =
-NetGSM veya PandaSMS hesabınız varsa, API bilgilerinizi girerek müşterilerinize otomatik kargo SMS'i gönderebilirsiniz. WooCommerce > Ayarlar > Hezarfen > Manuel Kargo Takip bölümünden yapılandırabilirsiniz.
+= WooCommerce SMS eklentisi ile SMS bildirimleri nasıl gönderilir? =
+**YENİ SMS Otomasyonu** ile NetGSM hesabınız varsa, API bilgilerinizi girerek müşterilerinize otomatik SMS bildirimleri gönderebilirsiniz. WooCommerce > Ayarlar > Hezarfen > SMS Ayarları bölümünden gelişmiş SMS kuralları oluşturabilir, farklı sipariş durumları için özel SMS şablonları tanımlayabilirsiniz. Legacy NetGSM/PandaSMS ayarlarınız otomatik olarak yeni sisteme aktarılır.
 
 = Kurumsal ve bireysel fatura ayrımı nasıl yapılır? =
 WooCommerce > Ayarlar > Hezarfen > Ödeme Sayfası Ayarları menüsünden "Ödeme ekranında vergi alanlarını göster" seçeneğini aktifleştirdiğinizde, müşterileriniz kurumsal veya bireysel fatura seçimi yapabilir.
@@ -132,11 +117,11 @@ Hayır, Pro sürüme geçiş yaptığınızda mevcut tüm verileriniz korunur. S
 = Kaybolan şifreleme anahtarını nasıl kurtarabilirim? =
 WooCommerce > Ayarlar > Hezarfen > Şifreleme Anahtarı Kurtarma bölümünden yeni anahtar oluşturabilirsiniz. Oluşturulan anahtarı wp-config.php dosyanıza eklemeniz gerekir. Detaylı bilgi için dokümantasyonu inceleyin.
 
-= Hangi ödeme yöntemleriyle uyumlu? =
-Hezarfen, tüm WooCommerce ödeme yöntemleriyle uyumludur. Kapıda ödeme, kredi kartı, havale/EFT dahil tüm ödeme metodlarıyla sorunsuz çalışır.
+= Hangi eklentilerle uyumlu? =
+Hezarfen ile uyumlu olmadığını düşündüğünüz bir eklentiyle karşılaşırsanız bize WordPress forum üzerinden ulaşmanızı rica ederiz. Kapıda ödeme, kredi kartı, havale/EFT dahil tüm ödeme metodlarıyla sorunsuz çalışır. PayTR ve Iyzico gibi sanal pos çözümleriyle de tam uyumludur.
 
 = Çoklu dil desteği var mı? =
-Eklenti Türkçe ve İngilizce dillerini desteklemektedir. WPML ve Polylang gibi çoklu dil eklentileriyle uyumludur.
+Bu Türkçe WooCommerce eklentisi, Türkçe ve İngilizce dillerini desteklemektedir. WPML ve Polylang gibi çoklu dil eklentileriyle uyumludur. Türkiye e-ticaret standartlarına göre optimize edilmiştir.
 
 == Screenshots ==
 1. Kargo takip no giriş alanı
@@ -152,6 +137,22 @@ Eklenti Türkçe ve İngilizce dillerini desteklemektedir. WPML ve Polylang gibi
 11. Kargoya verildi özellik ayarları
 
 == Changelog ==
+= 2.4.1 - 2015-08-18 =
+* readme.txt update
+
+= 2.4.0 - 2025-08-18 =
+* **YENİ ÖZELLİK: SMS Otomasyonu Sistemi** - Sipariş durumu değişikliklerinde otomatik SMS gönderimi
+* **YENİ ÖZELLİK: Gelişmiş SMS Kuralları** - Farklı sipariş durumları için özelleştirilebilir SMS kuralları
+* **YENİ ÖZELLİK: NetGSM Yerleşik Entegrasyonu** - NetGSM API'si ile doğrudan entegrasyon
+* **YENİ ÖZELLİK: Legacy SMS Migrasyonu** - Eski NetGSM/PandaSMS ayarlarının otomatik aktarımı ve SMS otomasyonunun otomatik etkinleştirilmesi
+* **YENİ ÖZELLİK: SMS Şablon Editörü** - Özelleştirilebilir SMS mesaj şablonları ve NetGSM değişkenleri
+* **İYİLEŞTİRME: Sipariş Düzenleme Arayüzü** - Modern ve temiz tasarım, gelişmiş kullanıcı deneyimi
+* **İYİLEŞTİRME: Otomatik Address2 Etkinleştirme** - Gizli adres alanları sessizce otomatik etkinleştiriliyor
+* **İYİLEŞTİRME: Ayarlar Hızlı Erişim** - Eklenti listesinde doğrudan ayarlar bağlantısı eklendi
+* **İYİLEŞTİRME: UI Temizliği** - Gereksiz upsell, anket ve geri bildirim içerikleri kaldırıldı
+* **DÜZELTME: PandaSMS Entegrasyonu** - PandaSMS legacy entegrasyonu hata düzeltmeleri
+* **DÜZELTME: Asset Optimizasyonu** - Kullanılmayan admin JavaScript ve CSS dosyaları kaldırıldı
+
 = 2.3.7 - 2025-08-13 =
 * DHL E-Commerce kargo eklendi.
 
