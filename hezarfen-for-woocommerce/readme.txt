@@ -1,12 +1,12 @@
 
 === Hezarfen - Türkiye Kargo Entegrasyonu - WooCommerce Kargo Takip ve Yönetim Eklentisi For Woocommerce ===
 Contributors: intenseyazilim, mucahitbal, mskapusuz
-Tags: kargo, sözleşme, hepsijet, mng, fatura
+Tags: kargo, sözleşmeler, hepsijet, mng, fatura
 Requires at least: 5.3
 Tested up to: 6.8
 Requires PHP: 7.0
 License: GPL2
-Stable tag: 2.5.1
+Stable tag: 2.5.2
 
 TAMAMEN ÜCRETSİZ 🚀 2000+ WEBSİTESİ! Türkiye'nin Lider WooCommerce Kargo Takip Eklentisi: 23 kargo, SMS, MSS sözleşmeleri, ilçe/mahalle, vergi alanlar
 == Description ==
@@ -42,11 +42,13 @@ TAMAMEN ÜCRETSİZ 🚀 2000+ WEBSİTESİ! Türkiye'nin Lider WooCommerce Kargo 
 • SMS entegrasyonu ile Kargoya Verildi ve tüm sipariş durumlarında özelleştirilebilir SMS bilgilendirme
 
 **📋 Mesafeli Satış Sözleşmesi (MSS) ve Ön Bilgilendirme Formu**
-• Dinamik sözleşme oluşturma ve yönetimi
+• Dinamik sözleşme oluşturma ve yönetimi (mesafeli satış s. ve ön bilgilendirme formu dışında cayma hakkı vs gibi dilediğiniz sözleşmeleri ekleyebilirsiniz.)
 • WordPress sayfalarını sözleşme şablonu olarak kullanma
 • Ödeme sayfasında sözleşme gösterimi (sayfa içi veya modal)
 • Otomatik değişken değiştirme sistemi (müşteri adı, sipariş tarihi, ürün bilgileri vb.)
-• Sözleşme kabul zorunluluğu ve doğrulama
+• Otomatik oluşan sözleşmelerin müşteri hesabım sayfası sipariş detayında gösterilmesi
+• Sözleşmelerin otomatik olarak sipariş alındı mailinde yer alması
+• Sözleşme kabul zorunluluğu ve doğrulama (hangi sözleşmelerin onay gerektirdiği kontrol edilebiliyor.)
 • Sipariş bazında sözleşme arşivleme ve saklama
 • KVKK uyumlu güvenli veri saklama
 
@@ -136,7 +138,7 @@ WooCommerce > Ayarlar > Hezarfen > Mesafeli Satış Sözleşmesi menüsünden MS
 = Sözleşme şablonlarında hangi değişkenleri kullanabilirim? =
 MSS sözleşme şablonlarınızda dinamik değişkenleri kullanabilirsiniz. Bu değişkenler sipariş verildiğinde otomatik olarak gerçek verilerle değiştirilir.
 
-= Sözleşme verileri nasıl saklanır? =
+= Sözleşmeler nasıl saklanır? =
 Müşteriler tarafından kabul edilen sözleşmeler, KVKV uyumlu şekilde veritabanında güvenli olarak saklanır. Her sipariş için ayrı sözleşme kaydı oluşturulur ve IP adresi, kullanıcı aracısı gibi teknik bilgiler de kaydedilir.
 
 = Hezarfen nedir? =
@@ -190,11 +192,16 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 15. Hesabım sayfasında siparişe ait oluşmuş sözleşmelerin gösterilmesi
 
 == Changelog ==
+= 2.5.2 - 2025-09-10 = 
+* "Kargoya verildi" durumundaki regresyon giderildi, tekrar durum aktif hale getirildi.
+* Debug fonksiyonları kaldırıldı.
+* SMS otomasyonundaki {siparis_toplami} ve {order_total} değişkenlerinde yaşanan karakter sorunu giderildi.
+
 = 2.5.1 - 2025-09-09 =
 * readme.txt
 
 = 2.5.0 - 2025-09-09 =
-* **YENİ ÖZELLİK: Mesafeli Satış Sözleşmesi, Ön Bilgilendirme Formu ve Özel Sözleşmeler**
+* **YENİ ÖZELLİK: Mesafeli Satış Sözleşme, Ön Bilgilendirme Formu ve Özel Sözleşmeler**
 * **DÜZELTME**: Ödeme ekranında ilçe ve mahalle alanlarında görünen not found uyarısının Türkçeleştirilmesi
 * **DÜZELTME** Lokalizasyon kaynaklı PHP uyarısı giderildi.
 
