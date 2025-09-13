@@ -6,7 +6,7 @@ Requires at least: 5.3
 Tested up to: 6.8
 Requires PHP: 7.0
 License: GPL2
-Stable tag: 2.5.4
+Stable tag: 2.6.0
 
 TAMAMEN ÜCRETSİZ 🚀 2000+ WEBSİTESİ! Türkiye'nin Lider WooCommerce Kargo Takip Eklentisi: 23 kargo, SMS, MSS sözleşmeleri, ilçe/mahalle, vergi alanlar
 == Description ==
@@ -15,6 +15,7 @@ TAMAMEN ÜCRETSİZ 🚀 2000+ WEBSİTESİ! Türkiye'nin Lider WooCommerce Kargo 
 
 = 🚀 2000+ WooCommerce Sitesi tarafından kullanılıyor! =
 
+✅ **Ücretsiz Hepsijet Kargo Entegrasyonu, ayrıca 23 diğer kargo firmasında kargo takip özelliği**:
 ✅ **Zaman Tasarrufu**: Manuel kargo işlemlerinizi otomatikleştirin, sipariş takibi kolaylaştırın
 ✅ **Müşteri Memnuniyeti**: WooCommerce SMS eklentisi ile SMS bilgilendirme ve e-posta bildirimleriyle müşterilerinizi bilgilendirin
 ✅ **Türkiye'ye Özel**: İl/ilçe/mahalle seçimi, TC No doğrulama, vergi ekleme ve vergi bilgileri
@@ -34,7 +35,12 @@ TAMAMEN ÜCRETSİZ 🚀 2000+ WEBSİTESİ! Türkiye'nin Lider WooCommerce Kargo 
 
 = ⭐ TAMAMEN ÜCRETSİZ =
 
+**🚚 Hepsijet Ücretsiz WooCommerce Kargo Entegrasyonu**
+• 1-4 Desi 69.99TL - Anlaşma yapmaınza gerek yok, intense.com.tr'den kayıt olun, bakiye yükleyin ve gönderime başlayın. Alt limit yok!
+• Ücretsiz entegrasyon (otomatik kargo takip no girişi, otomatik siparişin kargoya verildi durumuna geçmesi, otomatik siparişin tamamlandı durumuna geçmesi, otomatik müşteriye e-posta bildirimi)
+
 **🚚 Kargo Yönetimi ve WooCommerce Kargo Takip Modülü**
+• 23 farklı kargo firması (Yurtiçi, DHL E-Commerce, Aras, Sürat, UPS, PTT vs.)
 • Kargo takip numarası girişi ve sipariş yönetimi
 • "Kargoya Verildi" sipariş durumu ve gönderi takibi
 • Müşteri panelinde detaylı kargo görüntüleme ve sipariş takibi
@@ -73,6 +79,32 @@ Hezarfen, yetkin bir ekip tarafından geliştirilmiştir. Ekibimiz, dünyanın e
 
 = 🛡️ KVKK Uyumluluğu =
 Hezarfen, KVKK’nın yurt dışına kişisel veri aktarımına ilişkin hükümleriyle uyumludur. Bilinen bazı kargo SaaS çözümleri kargo müşteri verilerini yurtdışına taşıyabilirken (sunucularının yurtdışında olması sebebiyle), Hezarfen verilerinizi kargo takip işlemleri için verilerinizi yurt dışına çıkarmaz.
+
+== Privacy ==
+
+Bu eklenti, Intense Yazılım İnternet Teknolojileri Sanayi ve Ticaret Limited Şirketi (“Intense”) tarafından sağlanan harici API servislerine dayanır.  
+Kargo fiyatlarını gösterebilmek için Intense API’larına HTTP istekleri yapılır. Bu istekler sırasında HTTP protokolü gereği teknik bilgiler (ör. alan adı, IP adresi) otomatik olarak iletilebilir; ancak müşteri veya sipariş verileri gönderilmez.  
+
+Mağazanızı bağladıktan sonra, kargo aracılık hizmetlerinin sağlanabilmesi için aşağıdaki veriler işlenebilir ve Intense sunucularına ve/veya anlaşmalı kargo şirketlerine aktarılabilir:  
+- Müşteri ve sipariş bilgileri (ad-soyad, adres, telefon, e-posta, sipariş ürünleri, gönderi detayları)  
+- Teknik veriler (mağaza alan adı, IP adresi, log kayıtları)  
+
+Bu veriler, kargo etiketlerinin oluşturulması, fiyatların hesaplanması, gönderilerin anlaşmalı kargo şirketlerine aktarılması ile sınırlı kalmaksızın; ayrıca sistem güvenliği, hata tespiti, log kayıtlarının saklanması ve teknik destek süreçlerinin yürütülmesi amacıyla da kullanılabilmektedir.  
+
+Detaylı bilgi için Gizlilik Politikamız: https://intense.com.tr/yasal/gizlilik-politikasi/
+
+---
+
+This plugin relies on external API services provided by Intense Yazılım İnternet Teknolojileri Sanayi ve Ticaret Limited Şirketi (“Intense”).  
+In order to display shipping prices, the plugin makes HTTP requests to Intense APIs. During these requests, technical information (such as domain name or IP address) may be transmitted automatically as part of the HTTP protocol; however, no customer or order data is sent.  
+
+Once you connect your store, the following data may be processed and transferred to Intense servers and/or contracted cargo companies to provide shipping relay services:  
+- Customer and order information (name, address, phone, email, order items, shipment details)  
+- Technical data (store domain, IP address, log data)  
+
+This data is primarily used to generate shipping labels, calculate pricing, and transfer shipments to contracted cargo companies. In addition, certain technical and log data may also be retained and processed for purposes such as system security, error detection, log storage, and providing technical support.  
+
+For more details, please see our Privacy Policy: https://intense.com.tr/yasal/gizlilik-politikasi/
 
 == Installation ==
 
@@ -216,6 +248,10 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 15. Hesabım sayfasında siparişe ait oluşmuş sözleşmelerin gösterilmesi
 
 == Changelog ==
+= 2.6.0 - 2025-09-13 =
+* Ücretsiz Hepsijet WooCommerce Kargo Entegrasyonu
+* Hata gidermeler
+
 = 2.5.4 - 2025-09-10 =
 * Gereksiz bir dosya eklentiden silindi.
 
@@ -233,6 +269,13 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 
 = 2.5.0 - 2025-09-09 =
 * **YENİ ÖZELLİK: Mesafeli Satış Sözleşme, Ön Bilgilendirme Formu ve Özel Sözleşmeler**
+* **YENİ ÖZELLİK: Sözleşmeler Yönetim Sistemi** - Dinamik sözleşme oluşturma, WordPress sayfalarını sözleşme şablonu olarak kullanma
+* **YENİ ÖZELLİK: Sözleşmeler Ödeme Sayfasında** - Ödeme sayfasında sözleşme gösterimi (sayfa içi veya modal)
+* **YENİ ÖZELLİK: Sözleşmeler Otomatik Değişken Sistemi** - Müşteri adı, sipariş tarihi, ürün bilgileri vb. otomatik değiştirme
+* **YENİ ÖZELLİK: Sözleşmeler Müşteri Paneli** - Oluşan sözleşmelerin müşteri hesabım sayfası sipariş detayında gösterilmesi
+* **YENİ ÖZELLİK: Sözleşmeler E-posta Entegrasyonu** - Sözleşmelerin otomatik olarak sipariş alındı mailinde yer alması
+* **YENİ ÖZELLİK: Sözleşmeler Kabul Zorunluluğu** - Hangi sözleşmelerin onay gerektirdiği kontrol edilebiliyor
+* **YENİ ÖZELLİK: Sözleşmeler Arşivleme** - Sipariş bazında sözleşme arşivleme ve saklama
 * **DÜZELTME**: Ödeme ekranında ilçe ve mahalle alanlarında görünen not found uyarısının Türkçeleştirilmesi
 * **DÜZELTME** Lokalizasyon kaynaklı PHP uyarısı giderildi.
 

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Hezarfen - WooCommerce Kargo Entegrasyonu - WooCommerce Kargo Takip, İlçe/Mahalle, Sözleşmeler For Woocommerce
  * Description: Türkiye'nin WooCommerce kargo eklentisi - 26+ kargo firmalası için takip, sms, e-posta bildirimleri + Mesafeli Satış Sözleşmesi desteği
- * Version: 2.5.4
+ * Version: 2.6.0
  * Author: Intense Yazılım Ltd.
  * Author URI: https://intense.com.tr
  * Developer: Intense Yazılım Ltd.
@@ -25,7 +25,7 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 	return;
 }
 
-define( 'WC_HEZARFEN_VERSION', '2.5.4' );
+define( 'WC_HEZARFEN_VERSION', '2.6.0' );
 define( 'WC_HEZARFEN_MIN_MBGB_VERSION', '0.6.1' );
 define( 'WC_HEZARFEN_FILE', __FILE__ );
 define( 'WC_HEZARFEN_UYGULAMA_YOLU', plugin_dir_path( __FILE__ ) );
@@ -33,6 +33,9 @@ define( 'WC_HEZARFEN_UYGULAMA_URL', plugin_dir_url( __FILE__ ) );
 define( 'WC_HEZARFEN_NEIGH_API_URL', plugin_dir_url( __FILE__ ) . 'api/get-mahalle-data.php' );
 
 add_action( 'plugins_loaded', 'hezarfen_load_plugin_textdomain' );
+
+// Load privacy policy integration
+require_once WC_HEZARFEN_UYGULAMA_YOLU . 'includes/class-privacy-policy.php';
 
 /**
  * Load plugin textdomain
@@ -62,6 +65,7 @@ function hezarfen_add_settings_link( $links ) {
 // Add settings link to plugins page
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'hezarfen_add_settings_link' );
 
+
 // Declare our plugin compatible with the Woocommerce HPOS feature.
 add_action(
 	'before_woocommerce_init',
@@ -71,5 +75,10 @@ add_action(
 		}
 	} 
 );
+
+// Load Composer autoloader for dependencies like TCPDF
+if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+}
 
 require_once 'includes/Autoload.php';

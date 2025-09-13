@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => '2.5.4',
-        'version' => '2.5.4.0',
-        'reference' => '5c475bea5d52442fefbb09dc0339c546cd85da7f',
+        'pretty_version' => '2.6.0',
+        'version' => '2.6.0.0',
+        'reference' => 'c6b363805f357ca7ab11b36e295362f2e7cc1d5d',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,11 +11,20 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => '2.5.4',
-            'version' => '2.5.4.0',
-            'reference' => '5c475bea5d52442fefbb09dc0339c546cd85da7f',
+            'pretty_version' => '2.6.0',
+            'version' => '2.6.0.0',
+            'reference' => 'c6b363805f357ca7ab11b36e295362f2e7cc1d5d',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'tecnickcom/tcpdf' => array(
+            'pretty_version' => '6.10.0',
+            'version' => '6.10.0.0',
+            'reference' => 'ca5b6de294512145db96bcbc94e61696599c391d',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../tecnickcom/tcpdf',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
