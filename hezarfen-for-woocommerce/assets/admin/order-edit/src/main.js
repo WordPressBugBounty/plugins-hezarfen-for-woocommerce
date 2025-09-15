@@ -125,7 +125,7 @@ jQuery(document).ready(($)=>{
       standardFields.addClass('hidden');
       hepsijetFields.removeClass('hidden');
       standardButton.addClass('hidden');
-      // Only show hepsijet button if it exists (not during onboarding)
+      // Always show hepsijet button when HepsiJet is selected
       if (hepsijetButton.length > 0) {
         hepsijetButton.removeClass('hidden');
       }
@@ -133,8 +133,8 @@ jQuery(document).ready(($)=>{
       // Reset conditional fields when showing Hepsijet fields
       $('#hepsijet-delivery-slot-container').addClass('hidden');
       $('#hepsijet-return-date-container').addClass('hidden');
-    } else {
-      // Show standard tracking fields
+    } else if (selectedCourier) {
+      // Show standard tracking fields for any other selected courier
       standardFields.removeClass('hidden');
       hepsijetFields.addClass('hidden');
       standardButton.removeClass('hidden');
@@ -142,26 +142,45 @@ jQuery(document).ready(($)=>{
       if (hepsijetButton.length > 0) {
         hepsijetButton.addClass('hidden');
       }
+    } else {
+      // No courier selected - hide all tracking fields
+      standardFields.addClass('hidden');
+      hepsijetFields.addClass('hidden');
+      standardButton.addClass('hidden');
+      if (hepsijetButton.length > 0) {
+        hepsijetButton.addClass('hidden');
+      }
     }
   });
   
-  // Show Hepsijet fields by default if Hepsijet option is selected
-  if ($('#courier-company-select-hepsijet-entegrasyon').is(':checked')) {
-    const standardFields = $('#standard-tracking-fields');
-    const hepsijetFields = $('#hepsijet-integration-fields');
-    const standardButton = $('#add-to-tracking-list');
-    const hepsijetButton = $('#create-hepsijet-shipment');
-    
-    // Show Hepsijet integration fields
-    standardFields.addClass('hidden');
-    hepsijetFields.removeClass('hidden');
-    standardButton.addClass('hidden');
-    // Only show hepsijet button if it exists (not during onboarding)
-    if (hepsijetButton.length > 0) {
-      hepsijetButton.removeClass('hidden');
-    }
+  // Initialize: hide all tracking fields since no courier is selected by default
+  const standardFields = $('#standard-tracking-fields');
+  const hepsijetFields = $('#hepsijet-integration-fields');
+  const standardButton = $('#add-to-tracking-list');
+  const hepsijetButton = $('#create-hepsijet-shipment');
+  
+  // Hide all fields and buttons by default
+  standardFields.addClass('hidden');
+  hepsijetFields.addClass('hidden');
+  standardButton.addClass('hidden');
+  if (hepsijetButton.length > 0) {
+    hepsijetButton.addClass('hidden');
   }
   
+  // Handle help button toggle
+  metabox_wrapper.find('#hepsijet-help-toggle').on('click', function() {
+    const helpContent = $('#hepsijet-help-content');
+    const button = $(this);
+    
+    if (helpContent.hasClass('hidden')) {
+      helpContent.removeClass('hidden');
+      button.html('<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Kapat');
+    } else {
+      helpContent.addClass('hidden');
+      button.html('<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Yardım');
+    }
+  });
+
   // Handle delivery type selection
   metabox_wrapper.find('#hepsijet-delivery-type').on('change', function() {
     const selectedType = $(this).val();

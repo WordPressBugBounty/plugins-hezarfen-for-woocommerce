@@ -43,31 +43,31 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                 <li class="flex justify-center col-span-2 xl:col-span-2 2xl:col-span-3">
                                     <input type="radio" id="courier-company-select-hepsijet-entegrasyon"
                                             name="courier-company-select" value="hepsijet-entegrasyon"
-                                            class="hidden peer" checked>
+                                            class="hidden peer">
 
                                     <label for="courier-company-select-hepsijet-entegrasyon"
-                                            class="relative flex items-center justify-between w-full p-1
-                                                    bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-300
+                                            class="relative flex items-center justify-between w-full p-1 h-12
+                                                    bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-300
                                                     rounded-xl cursor-pointer shadow-sm
-                                                    peer-checked:border-2 peer-checked:border-orange-500 peer-checked:shadow-lg
+                                                    peer-checked:border-2 peer-checked:border-blue-500 peer-checked:shadow-lg
                                                     hover:shadow-md">
 
                                         <!-- Sol: Logo ve metin -->
-                                        <div class="flex items-center gap-3">
-                                            <div class="">
-                                            <img class="max-h-8"
+                                        <div class="flex items-center gap-2 w-full">
+                                            <div class="flex flex-col items-center flex-shrink-0">
+                                            <img class="max-h-6 w-auto"
                                                 src="<?php echo esc_url(HEZARFEN_MST_COURIER_LOGO_URL . Helper::get_courier_class('hepsijet')::$logo); ?>" 
                                                 loading="lazy"
                                                 alt="HepsiJet">
 
                                             <!-- Etiket Rozet -->
-                                            <span class="-top-2 -right-3 text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full shadow">
-                                                Entegrasyon
+                                            <span class="text-[7px] bg-blue-500 text-white px-1 py-0.5 rounded-full shadow-sm font-medium mt-0.5">
+                                                Ücretsiz Entegrasyon
                                             </span>
                                             </div>
 
-                                            <div class="flex flex-col leading-tight">
-                                            <span class="text-xs text-gray-600">
+                                            <div class="flex flex-col leading-tight overflow-hidden flex-1 min-w-0">
+                                            <div class="text-xs text-gray-600">
                                                 <?php
                                                 // Get actual pricing for 1 and 4 desi to determine price range
                                                 try {
@@ -77,15 +77,16 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                     if ($pricing_info !== false) {
                                                         $price = $pricing_info['price_1_desi'];
                                                         $desi_range = $pricing_info['display_text'];
-                                                        echo '<span class="inline-flex items-center gap-1">';
-                                                        echo '<span style="font-weight: bold !important; font-size: 1.125rem !important; color: #2563eb !important; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;">' . esc_html(number_format($price, 2)) . '₺+KDV</span>';
-                                                        echo '<span class="text-gray-700 font-medium">(' . esc_html($desi_range) . ')</span>';
-                                                        echo '</span><p class="text-xs text-gray-600;" style="line-height: normal !important;"> ' . esc_html__('Free integration, automatic tracking number entry, order status update', 'hezarfen-for-woocommerce') . '</p>';
+                                                        echo '<span style="font-weight: bold !important; font-size: 1.125rem !important; color: #2563eb !important; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;">' . esc_html(number_format($price, 2, ',', '')) . '₺+KDV</span>';
+                                                        echo ' <span class="text-gray-700 font-medium">(' . esc_html($desi_range) . ')</span>';
                                                     }
                                                 } catch (Exception $e) {
                                                 }
                                                 ?>
-                                            </span>
+                                            </div>
+                                            <div class="hezarfen-marquee-text text-xs text-gray-600">
+                                                <span><?php echo esc_html__('Free integration with barcode creation, instant tracking updates, and complimentary SMS/email notifications. Orders are marked as shipped automatically, and once delivered, status is set to completed.', 'hezarfen-for-woocommerce'); ?></span>
+                                            </div>
                                             </div>
                                         </div>
                                     </label>
@@ -117,7 +118,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                         </div>
 
                         <!-- Standard tracking number input -->
-                        <div class="mb-5" id="standard-tracking-fields">
+                        <div class="mb-5 hidden" id="standard-tracking-fields">
                             <label for="tracking-num-input" class="font-light text-gray-1 block mb-2 text-sm dark:text-white"><?php esc_html_e('Tracking Number', 'hezarfen-for-woocommerce'); ?></label>
                             <input type="text" id="tracking-num-input" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-3 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
                         </div>
@@ -129,23 +130,42 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                             $consumer_key = get_option( 'hezarfen_hepsijet_consumer_key', '' );
                             $consumer_secret = get_option( 'hezarfen_hepsijet_consumer_secret', '' );
                             $credentials_missing = empty( $consumer_key ) || empty( $consumer_secret );
+                            ?>
                             
-                            if ( $credentials_missing ): ?>
-                                <!-- Setup Required Content (replaces form) -->
-                                <div class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                                    <div class="text-center max-w-md mx-auto">
-                                        <div class="mb-4">
-                                            <svg class="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                            </svg>
-                                        </div>
-                                        <h3 class="text-lg font-semibold text-gray-800 mb-2">
-                                            <?php esc_html_e('🚀 Start Shipping in Minutes!', 'hezarfen-for-woocommerce'); ?>
-                                        </h3>
-                                        <p class="text-sm text-gray-600 mb-4">
+                            <!-- Help Button -->
+                            <div class="mb-4 flex justify-end">
+                                <button type="button" id="hepsijet-help-toggle" class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <?php esc_html_e('Help', 'hezarfen-for-woocommerce'); ?>
+                                </button>
+                            </div>
+
+                            <!-- Help Content (hidden by default) -->
+                            <div id="hezarfen-help-content" class="mb-4 hidden p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                                <div class="text-center max-w-md mx-auto">
+                                    <div class="mb-4">
+                                        <svg class="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                                        <?php if ( $credentials_missing ): ?>
+                                            <?php esc_html_e('🚀 Start Shipping Without a Shipping Agreement', 'hezarfen-for-woocommerce'); ?>
+                                        <?php else: ?>
+                                            <?php esc_html_e('🚀 HepsiJet Integration Guide', 'hezarfen-for-woocommerce'); ?>
+                                        <?php endif; ?>
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        <?php if ( $credentials_missing ): ?>
                                             <?php esc_html_e('Quick setup to unlock Hepsijet free integration', 'hezarfen-for-woocommerce'); ?>
-                                        </p>
-                                        <div class="text-left space-y-3 mb-6">
+                                        <?php else: ?>
+                                            <?php esc_html_e('How to use HepsiJet integration effectively', 'hezarfen-for-woocommerce'); ?>
+                                        <?php endif; ?>
+                                    </p>
+                                    <div class="text-left space-y-3 mb-6">
+                                        <?php if ( $credentials_missing ): ?>
                                             <div class="flex items-start gap-3">
                                                 <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
                                                 <div>
@@ -186,9 +206,101 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                     <p class="text-xs text-green-600"><?php esc_html_e('Start creating shipments with automatic tracking', 'hezarfen-for-woocommerce'); ?></p>
                                                 </div>
                                             </div>
+                                            <div class="flex gap-2 mt-6">
+                                                <a href="https://intense.com.tr" target="_blank" class="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center">
+                                                    <?php esc_html_e('Go to intense.com.tr', 'hezarfen-for-woocommerce'); ?>
+                                                </a>
+                                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=hepsijet_integration' ) ); ?>" target="_blank" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 text-center">
+                                                    <?php esc_html_e('Settings', 'hezarfen-for-woocommerce'); ?>
+                                                </a>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="flex items-start gap-3">
+                                                <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-800"><?php esc_html_e('Fill Form Details', 'hezarfen-for-woocommerce'); ?></p>
+                                                    <p class="text-xs text-gray-600"><?php esc_html_e('Enter package weight, dimensions, and delivery preferences', 'hezarfen-for-woocommerce'); ?></p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-start gap-3">
+                                                <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-800"><?php esc_html_e('Create Shipment', 'hezarfen-for-woocommerce'); ?></p>
+                                                    <p class="text-xs text-gray-600"><?php esc_html_e('Click Create Shipment to generate barcode and tracking', 'hezarfen-for-woocommerce'); ?></p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-start gap-3">
+                                                <span class="flex-shrink-0 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
+                                                <div>
+                                                    <p class="text-sm font-medium text-green-800"><?php esc_html_e('Automatic Updates', 'hezarfen-for-woocommerce'); ?></p>
+                                                    <p class="text-xs text-green-600"><?php esc_html_e('Order status and customer notifications handled automatically', 'hezarfen-for-woocommerce'); ?></p>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                            <!-- Show balance display only if credentials are configured -->
+
+                            <!-- Help Content (hidden by default) -->
+                            <div id="hepsijet-help-content" class="mb-4 hidden p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                                <div class="text-center max-w-md mx-auto">
+                                    <div class="mb-4">
+                                        <svg class="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                                        <?php esc_html_e('🚀 Start Shipping Without a Shipping Agreement', 'hezarfen-for-woocommerce'); ?>
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        <?php esc_html_e('Quick setup to unlock Hepsijet free integration', 'hezarfen-for-woocommerce'); ?>
+                                    </p>
+                                    <div class="text-left space-y-3 mb-6">
+                                        <div class="flex items-start gap-3">
+                                            <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-800"><?php esc_html_e('Create Account', 'hezarfen-for-woocommerce'); ?></p>
+                                                <p class="text-xs text-gray-600">
+                                                    <?php printf( 
+                                                        esc_html__('Create or sign in to your %s account', 'hezarfen-for-woocommerce'), 
+                                                        '<strong>intense.com.tr</strong>' 
+                                                    ); ?>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-800"><?php esc_html_e('Access Hepsijet ile Avantajlı Kargo Fiyatları', 'hezarfen-for-woocommerce'); ?></p>
+                                                <p class="text-xs text-gray-600"><?php esc_html_e('Go to My Account → Click Hepsijet ile Avantajlı Kargo Fiyatları', 'hezarfen-for-woocommerce'); ?></p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-800"><?php esc_html_e('Configure Integration', 'hezarfen-for-woocommerce'); ?></p>
+                                                <p class="text-xs text-gray-600"><?php esc_html_e('Complete the form and copy credentials to Hezarfen settings', 'hezarfen-for-woocommerce'); ?></p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-800"><?php esc_html_e('Add Balance', 'hezarfen-for-woocommerce'); ?></p>
+                                                <p class="text-xs text-gray-600"><?php esc_html_e('Upload balance to your Intense Wallet', 'hezarfen-for-woocommerce'); ?></p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <span class="flex-shrink-0 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
+                                            <div>
+                                                <p class="text-sm font-medium text-green-800"><?php esc_html_e('Create first barcode here!', 'hezarfen-for-woocommerce'); ?></p>
+                                                <p class="text-xs text-green-600"><?php esc_html_e('Start creating shipments with automatic tracking', 'hezarfen-for-woocommerce'); ?></p>
+                                            </div>
                                         </div>
                                         
-                                        <div class="flex gap-2">
+                                        <div class="flex gap-2 mt-6">
                                             <a href="https://intense.com.tr" target="_blank" class="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center">
                                                 <?php esc_html_e('Go to intense.com.tr', 'hezarfen-for-woocommerce'); ?>
                                             </a>
@@ -198,19 +310,25 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                         </div>
                                     </div>
                                 </div>
-                            <?php else: ?>
+                            </div>
                             
                             <!-- Wallet Balance Display -->
                             <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm font-medium text-blue-800"><?php esc_html_e('Intense Hepsijet ile Avantajlı Kargo Fiyatları Balance:', 'hezarfen-for-woocommerce'); ?></span>
                                     <div class="flex items-center gap-2">
-                                        <span id="kargogate-balance" class="text-sm font-bold text-blue-600">
-                                            <?php echo esc_html__('Click to check', 'hezarfen-for-woocommerce'); ?>
-                                        </span>
-                                        <button type="button" id="check-kargogate-balance" class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                            <?php esc_html_e('Check', 'hezarfen-for-woocommerce'); ?>
-                                        </button>
+                                        <?php if ( $credentials_missing ): ?>
+                                            <span id="kargogate-balance" class="text-sm font-bold text-blue-600">
+                                                0,00TL
+                                            </span>
+                                        <?php else: ?>
+                                            <span id="kargogate-balance" class="text-sm font-bold text-blue-600">
+                                                <?php echo esc_html__('Click to check', 'hezarfen-for-woocommerce'); ?>
+                                            </span>
+                                            <button type="button" id="check-kargogate-balance" class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <?php esc_html_e('Check', 'hezarfen-for-woocommerce'); ?>
+                                            </button>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -225,6 +343,21 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                     <input type="number" id="hepsijet-desi" step="0.01" min="0.01" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-3 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
                                 </div>
                             </div>
+
+                            <!-- Always show the form, regardless of credentials status -->
+                            <?php if ( $credentials_missing ): ?>
+                                <!-- Show a notice that credentials are needed for actual shipment creation -->
+                                <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p class="text-sm text-yellow-800">
+                                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <?php esc_html_e('Configure credentials in settings to enable shipment creation.', 'hezarfen-for-woocommerce'); ?>
+                                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=hepsijet_integration' ) ); ?>" target="_blank" class="underline font-medium"><?php esc_html_e('Go to Settings', 'hezarfen-for-woocommerce'); ?></a>
+                                    </p>
+                                </div>
+                            <?php endif; ?>
+                            
                             
                             <!-- Delivery Type - Feature Flag: Hidden for now, hard-coded to 'standard' -->
                             <?php 
@@ -261,18 +394,14 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                     <option value=""><?php esc_html_e('Loading available dates...', 'hezarfen-for-woocommerce'); ?></option>
                                 </select>
                             </div>
-                            
-                            <?php endif; ?>
                         </div>
 
                         <div class="flex justify-center mt-2">
                             <!-- Standard button -->
-                            <button data-order_id="<?php echo esc_attr($order_id); ?>" id="add-to-tracking-list" type="button" class="w-full text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-normal rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"><?php esc_html_e('Add to Tracking List', 'hezarfen-for-woocommerce'); ?></button>
+                            <button data-order_id="<?php echo esc_attr($order_id); ?>" id="add-to-tracking-list" type="button" class="hidden w-full text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-normal rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"><?php esc_html_e('Add to Tracking List', 'hezarfen-for-woocommerce'); ?></button>
                             
-                            <!-- Hepsijet integration button -->
-                            <?php if ( ! $credentials_missing ): ?>
-                            <button data-order_id="<?php echo esc_attr($order_id); ?>" id="create-hepsijet-shipment" type="button" class="w-full text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 font-normal rounded-lg text-sm px-5 py-2.5 me-2 mb-2 hidden"><?php esc_html_e('Create Shipment', 'hezarfen-for-woocommerce'); ?></button>
-                            <?php endif; ?>
+                             <!-- Hepsijet integration button -->
+                             <button data-order_id="<?php echo esc_attr($order_id); ?>" id="create-hepsijet-shipment" type="button" class="w-full text-white <?php echo $credentials_missing ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300'; ?> font-normal rounded-lg text-sm px-5 py-2.5 me-2 mb-2" <?php echo $credentials_missing ? 'disabled' : ''; ?>><?php esc_html_e('Create Shipment', 'hezarfen-for-woocommerce'); ?></button>
                         </div>
                     </div>
                 </div>
@@ -335,7 +464,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
 
                     if (!$has_integration_shipments && !$has_manual_shipments) :
                     ?>
-                        <div class="border-dashed border-2 border-gray-2 p-4 flex justify-center h-full">
+                        <div class="border-dashed border-2 border-gray-2 p-4 flex justify-center min-h-48">
                             <div id="no-shipments" class="w-9/12 flex justify-center flex-col font-medium items-center">
                                 <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 20">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m13 19-6-5-6 5V2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17Z" />
