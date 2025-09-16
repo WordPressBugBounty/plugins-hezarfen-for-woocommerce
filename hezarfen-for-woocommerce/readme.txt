@@ -6,7 +6,7 @@ Requires at least: 5.3
 Tested up to: 6.8
 Requires PHP: 7.0
 License: GPL2
-Stable tag: 2.6.3
+Stable tag: 2.6.4
 
 TAMAMEN ÜCRETSİZ 🚀 2000+ WEBSİTESİ!  Intense&Hepsijet İşbirliğiyle; Hezarfen için Hepsijet 1 ila 4 Desi 69,99TL+KDV WooCommerce Kargo Takip Eklentisi
 == Description ==
@@ -84,7 +84,7 @@ Hezarfen, KVKK’nın yurt dışına kişisel veri aktarımına ilişkin hüküm
 
 === Harici Servisler (External Services) ===
 
-Bu eklentinin Hepsijet Entegrasyon Özelliği, Intense Yazılım İnternet Teknolojileri Sanayi ve Ticaret Limited Şirketi (“Intense”) tarafından sağlanan harici API servislerine dayanır.  
+Bu eklentinin Hepsijet Entegrasyon Özelliği, Intense Yazılım İnternet Teknolojileri Sanayi ve Ticaret Limited Şirketi (“Intense”) tarafından sağlanan harici API servislerine (intense.com.tr) dayanır.  
 Kargo fiyatlarını gösterebilmek için Intense API’larına HTTP istekleri yapılır. Bu istekler sırasında HTTP protokolü gereği teknik bilgiler (ör. alan adı, IP adresi) otomatik olarak iletilebilir; ancak müşteri veya sipariş verileri gönderilmez.  
 
 Mağazanızı bağladıktan sonra, kargo aracılık hizmetlerinin sağlanabilmesi için aşağıdaki veriler işlenebilir ve Intense sunucularına ve/veya anlaşmalı kargo şirketlerine aktarılabilir:  
@@ -92,6 +92,8 @@ Mağazanızı bağladıktan sonra, kargo aracılık hizmetlerinin sağlanabilmes
 - Teknik veriler (mağaza alan adı, IP adresi, log kayıtları)  
 
 Bu veriler, kargo etiketlerinin oluşturulması, fiyatların hesaplanması, gönderilerin anlaşmalı kargo şirketlerine aktarılması ile sınırlı kalmaksızın; ayrıca sistem güvenliği, hata tespiti, log kayıtlarının saklanması ve teknik destek süreçlerinin yürütülmesi amacıyla da kullanılabilmektedir.  
+
+Ayrıca, eğitim videolarının çekilebilmesi için youtube.com RSS servisine bağlantı yapılır.
 
 Detaylı bilgi için [Gizlilik Politikamız](https://intense.com.tr/yasal/gizlilik-politikasi/)
 
@@ -105,6 +107,9 @@ Once you connect your store, the following data may be processed and transferred
 - Technical data (store domain, IP address, log data)  
 
 This data is primarily used to generate shipping labels, calculate pricing, and transfer shipments to contracted cargo companies. In addition, certain technical and log data may also be retained and processed for purposes such as system security, error detection, log storage, and providing technical support.  
+
+Additionally, in order to fetch training videos, a connection is made to the youtube.com RSS service.
+
 
 For more details, please see our [Privacy Policy](https://intense.com.tr/yasal/gizlilik-politikasi/).
 
@@ -253,6 +258,9 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 15. Hesabım sayfasında siparişe ait oluşmuş sözleşmelerin gösterilmesi
 
 == Changelog ==
+= 2.6.4 - 2025-09-16 =
+* Eğitim alanı iyileştirildi.
+
 = 2.6.3 - 2025-09-16 =
 * Eğitim alanı iyileştirildi.
 
