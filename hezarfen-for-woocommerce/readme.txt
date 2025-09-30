@@ -6,7 +6,7 @@ Requires at least: 5.3
 Tested up to: 6.8
 Requires PHP: 7.0
 License: GPL2
-Stable tag: 2.6.7
+Stable tag: 2.7.0
 
 🚀 2 bin site kullanıyor! Kargo takip, ücretsiz Hepsijet Entegrasyonu (1-4 desi: 69,99TL+KDV), Mesafeli Satış Sözleşmesi, NetGSM sipariş ve kargo SMS
 == Description ==
@@ -36,7 +36,7 @@ Stable tag: 2.6.7
 = ⭐ TAMAMEN ÜCRETSİZ =
 
 **🚚 Hepsijet Ücretsiz WooCommerce Kargo Entegrasyonu**
-• 1-4 Desi 69,99TL+KDV - Anlaşma yapmaınza gerek yok, intense.com.tr'den kayıt olun, bakiye yükleyin ve gönderime başlayın. Kargo gönderim için minimum limit yok! İster ayda 1 tane, ister 10000 tane!
+• 1-4 Desi 69,99TL+KDV - Anlaşma yapmanıza gerek yok, intense.com.tr'den kayıt olun, bakiye yükleyin ve gönderime başlayın. Kargo gönderim için minimum limit yok! İster ayda 1 tane, ister 10000 tane!
 • Ücretsiz entegrasyon (otomatik kargo takip no girişi, otomatik siparişin kargoya verildi durumuna geçmesi, otomatik siparişin tamamlandı durumuna geçmesi, otomatik müşteriye e-posta bildirimi)
 
 **🚚 Kargo Yönetimi ve WooCommerce Kargo Takip Modülü**
@@ -139,7 +139,7 @@ For more details, please see our [Privacy Policy](https://intense.com.tr/yasal/g
 Eğitim videoları ve rehberler için [Hezarfen YouTube resmi kanalımızı](https://www.youtube.com/@hezarfenforwoocommerce) ziyaret edebilir ve abone olabilirsiniz.
 
 = Bu WooCommerce eklentisi tamamen ücretsiz mi? =
-Evet, yukarıda listelenen özellikler tamamen ücretsizdir. 23 kargo firması için manuel takip, WooCommerce kargo takip modülü, il/ilçe/mahalle seçimi, TC kimlik no alanı gibi özellikler ücretsiz sunulmaktadır.Ayrıca, Hezarfen'in intense.com.tr üzerinde satılan Pro versiyonu mevcuttur. Pro versiyonda otomatik woocommerce kargo entegrasyonu, Paraşüt e-arşiv/e-fatura entegrasyonu özellikleri bulunmaktadır.
+Evet, yukarıda listelenen özellikler tamamen ücretsizdir. Intense Anlaşmalı Hepsijet Kargo Entegrasyonu (otomatik takip no girişi, otomatik sipariş durumunun kargoya verildi veya tamamlandı olması, bildirimler), 23 kargo firması için manuel takip, WooCommerce kargo takip modülü, il/ilçe/mahalle seçimi, TC kimlik no alanı gibi özellikler ücretsiz sunulmaktadır. Ayrıca, Hezarfen'in intense.com.tr üzerinde satılan Pro versiyonu mevcuttur. Pro versiyonda otomatik woocommerce kargo entegrasyonu (kendi kargo anlaşmalarınızla), Paraşüt e-arşiv/e-fatura entegrasyonu özellikleri bulunmaktadır.
 
 = Hangi WooCommerce sürümleriyle uyumlu? =
 WooCommerce 5.0 ve üzeri tüm sürümlerle uyumludur. HPOS (High Performance Order Storage) desteği mevcuttur.
@@ -258,6 +258,15 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 15. Hesabım sayfasında siparişe ait oluşmuş sözleşmelerin gösterilmesi
 
 == Changelog ==
+= 2.7.0 - 2025-10-01 =
+* Ücretsiz Hepsijet Entegrasyonun etiketine ürün detayları eklendi.
+* Sipariş liste ekranına fatura tipi sütunu eklendi.
+* Sözleşmelerdeki ürünler değişkenine nitelikler eklendi.
+* Sözleşmelerdeki ürünler değişkenin tablo olarak gösterilmesi sağlandı.
+* Sözleşmelerdeki ürünler değişkenindeki sütun isimlerinde değişiklik yapıldı.
+* Sözleşmelerde wp_hezarfen_contracts tablosunun oluşmaması problemi giderildi.
+* Sipariş düzenleme ekranındaki sözleşmeler alanı iyileştirildi, yönergeler eklendi.
+
 = 2.6.7 - 2025-09-19 =
 * Hezarfen kargo e-postasından kaynaklanan test maillerinin ve bazı maillerin gönderilememe problemi giderildi.
 * Sipariş düzenleme kargo takip alanında iyileştirmeler

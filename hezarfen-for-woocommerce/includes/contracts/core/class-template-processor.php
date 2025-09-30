@@ -183,19 +183,43 @@ class Template_Processor {
 	 * @return string
 	 */
 	private static function get_order_items_summary( $order ) {
-		$items = array();
+		$table_html = '<table style="width: 100%; border-collapse: collapse; margin: 10px 0;">';
+		$table_html .= '<thead>';
+		$table_html .= '<tr style="background-color: #f5f5f5;">';
+		$table_html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">' . __( 'Product', 'hezarfen-for-woocommerce' ) . '</th>';
+		$table_html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: center;">' . __( 'Quantity', 'hezarfen-for-woocommerce' ) . '</th>';
+		$table_html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: right;">' . __( 'Price (incl. tax)', 'hezarfen-for-woocommerce' ) . '</th>';
+		$table_html .= '</tr>';
+		$table_html .= '</thead>';
+		$table_html .= '<tbody>';
 		
 		foreach ( $order->get_items() as $item ) {
 			$product = $item->get_product();
-			$items[] = sprintf( 
-				'%s x %d - %s', 
-				$item->get_name(), 
-				$item->get_quantity(),
-				wc_price( $item->get_total() )
-			);
+			$product_name = $item->get_name();
+			
+			// Get item meta data (variations, add-ons, custom fields)
+			$item_meta = self::get_formatted_item_meta( $item );
+			
+			// Build product name with meta data
+			$product_display = $product_name;
+			if ( ! empty( $item_meta ) ) {
+				$product_display .= '<br><small style="color: #666;">' . $item_meta . '</small>';
+			}
+			
+			// Calculate total including tax
+			$item_total_with_tax = $item->get_total() + $item->get_total_tax();
+			
+			$table_html .= '<tr>';
+			$table_html .= '<td style="padding: 10px; border: 1px solid #ddd;">' . $product_display . '</td>';
+			$table_html .= '<td style="padding: 10px; border: 1px solid #ddd; text-align: center;">' . $item->get_quantity() . '</td>';
+			$table_html .= '<td style="padding: 10px; border: 1px solid #ddd; text-align: right;">' . wc_price( $item_total_with_tax ) . '</td>';
+			$table_html .= '</tr>';
 		}
 		
-		return implode( '<br>', $items );
+		$table_html .= '</tbody>';
+		$table_html .= '</table>';
+		
+		return $table_html;
 	}
 
 	/**
@@ -255,19 +279,40 @@ class Template_Processor {
 	 * @return string
 	 */
 	private static function get_cart_items_summary( $cart ) {
-		$items = array();
+		$table_html = '<table style="width: 100%; border-collapse: collapse; margin: 10px 0;">';
+		$table_html .= '<thead>';
+		$table_html .= '<tr style="background-color: #f5f5f5;">';
+		$table_html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">' . __( 'Product', 'hezarfen-for-woocommerce' ) . '</th>';
+		$table_html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: center;">' . __( 'Quantity', 'hezarfen-for-woocommerce' ) . '</th>';
+		$table_html .= '<th style="padding: 10px; border: 1px solid #ddd; text-align: right;">' . __( 'Price (incl. tax)', 'hezarfen-for-woocommerce' ) . '</th>';
+		$table_html .= '</tr>';
+		$table_html .= '</thead>';
+		$table_html .= '<tbody>';
 		
-		foreach ( $cart->get_cart() as $cart_item ) {
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
-			$items[] = sprintf( 
-				'%s x %d - %s', 
-				$product->get_name(),
-				$cart_item['quantity'],
-				wc_price( $cart_item['line_total'] + $cart_item['line_tax'] )
-			);
+			$product_name = $product->get_name();
+			
+			// Get item meta data (variations, add-ons, custom fields)
+			$item_meta = self::get_formatted_cart_item_meta( $cart_item );
+			
+			// Build product name with meta data
+			$product_display = $product_name;
+			if ( ! empty( $item_meta ) ) {
+				$product_display .= '<br><small style="color: #666;">' . $item_meta . '</small>';
+			}
+			
+			$table_html .= '<tr>';
+			$table_html .= '<td style="padding: 10px; border: 1px solid #ddd;">' . $product_display . '</td>';
+			$table_html .= '<td style="padding: 10px; border: 1px solid #ddd; text-align: center;">' . $cart_item['quantity'] . '</td>';
+			$table_html .= '<td style="padding: 10px; border: 1px solid #ddd; text-align: right;">' . wc_price( $cart_item['line_total'] + $cart_item['line_tax'] ) . '</td>';
+			$table_html .= '</tr>';
 		}
 		
-		return implode( '<br>', $items );
+		$table_html .= '</tbody>';
+		$table_html .= '</table>';
+		
+		return $table_html;
 	}
 
 	/**
@@ -334,6 +379,106 @@ class Template_Processor {
 		}
 		
 		return str_replace( array_keys( $replacements ), array_values( $replacements ), $content );
+	}
+
+	/**
+	 * Get formatted meta data for order item
+	 *
+	 * @param \WC_Order_Item_Product $item Order item.
+	 * @return string
+	 */
+	private static function get_formatted_item_meta( $item ) {
+		$meta_data = array();
+		$product = $item->get_product();
+		
+		// Get item meta data
+		$item_meta = $item->get_meta_data();
+		
+		foreach ( $item_meta as $meta ) {
+			$meta_data_array = $meta->get_data();
+			$key = $meta_data_array['key'];
+			
+			// Skip hidden meta (starts with _)
+			if ( strpos( $key, '_' ) === 0 ) {
+				continue;
+			}
+			
+			// Get human-readable label
+			$display_key = $key;
+			
+			// Check if it's an attribute
+			if ( strpos( $key, 'pa_' ) === 0 || strpos( $key, 'attribute_' ) === 0 ) {
+				// It's a product attribute - get the proper label
+				$attribute_name = str_replace( 'attribute_', '', $key );
+				$display_key = wc_attribute_label( $attribute_name, $product );
+			} else {
+				// Check if there's a display_key available
+				if ( isset( $meta_data_array['display_key'] ) && ! empty( $meta_data_array['display_key'] ) ) {
+					$display_key = $meta_data_array['display_key'];
+				} else {
+					// Convert snake_case or kebab-case to Title Case
+					$display_key = ucwords( str_replace( array( '_', '-' ), ' ', $key ) );
+				}
+			}
+			
+			// Get display value
+			$display_value = isset( $meta_data_array['display_value'] ) ? $meta_data_array['display_value'] : $meta_data_array['value'];
+			
+			// For attribute values, try to get the human-readable term name
+			if ( ( strpos( $key, 'pa_' ) === 0 || strpos( $key, 'attribute_' ) === 0 ) && ! is_array( $display_value ) ) {
+				$attribute_name = str_replace( 'attribute_', '', $key );
+				$term = get_term_by( 'slug', $display_value, $attribute_name );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$display_value = $term->name;
+				}
+			}
+			
+			// Format value if it's an array
+			if ( is_array( $display_value ) ) {
+				$display_value = implode( ', ', $display_value );
+			}
+			
+			// Add to meta data array
+			if ( ! empty( $display_key ) && ! empty( $display_value ) ) {
+				$meta_data[] = '<strong>' . esc_html( $display_key ) . ':</strong> ' . esc_html( $display_value );
+			}
+		}
+		
+		return ! empty( $meta_data ) ? implode( '<br>', $meta_data ) : '';
+	}
+
+	/**
+	 * Get formatted meta data for cart item
+	 *
+	 * @param array $cart_item Cart item array.
+	 * @return string
+	 */
+	private static function get_formatted_cart_item_meta( $cart_item ) {
+		// Use WooCommerce's built-in function to get formatted cart item data
+		$item_data_html = wc_get_formatted_cart_item_data( $cart_item, true );
+		
+		// If we got formatted data, clean it up and return
+		if ( ! empty( $item_data_html ) ) {
+			// Remove the dl/dt/dd tags and convert to our format
+			// wc_get_formatted_cart_item_data returns HTML with <dt> and <dd> tags
+			// We want to convert it to our <strong>Label:</strong> Value format
+			
+			// Strip the outer dl tags
+			$item_data_html = preg_replace( '/<\/?dl[^>]*>/', '', $item_data_html );
+			
+			// Convert <dt>Label</dt><dd>Value</dd> to <strong>Label:</strong> Value<br>
+			$item_data_html = preg_replace( '/<dt[^>]*>(.*?)<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/', '<strong>$1:</strong> $2<br>', $item_data_html );
+			
+			// Remove any remaining HTML tags except strong and br
+			$item_data_html = strip_tags( $item_data_html, '<strong><br>' );
+			
+			// Remove trailing <br> tags
+			$item_data_html = rtrim( $item_data_html, '<br>' );
+			
+			return $item_data_html;
+		}
+		
+		return '';
 	}
 
 	/**

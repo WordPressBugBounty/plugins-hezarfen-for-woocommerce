@@ -52,9 +52,39 @@ class Order_Agreements {
 	 * @param mixed $post_or_order Post or order object.
 	 */
 	public function render_agreements_meta_box( $post_or_order ) {
+		global $wpdb;
+		
 		$order = $post_or_order instanceof \WC_Order ? $post_or_order : wc_get_order( $post_or_order->ID );
 		
 		if ( ! $order ) {
+			return;
+		}
+		
+		// Check if contracts table exists
+		$table_name = $wpdb->prefix . 'hezarfen_contracts';
+		$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) ) === $table_name;
+		
+		if ( ! $table_exists ) {
+			?>
+			<div style="text-align: center; padding: 20px;">
+				<div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 15px;">
+					<p style="margin: 0 0 10px 0; color: #856404; font-weight: 600;">
+						⚠️ <?php esc_html_e( 'Contracts table not found in database!', 'hezarfen-for-woocommerce' ); ?>
+					</p>
+					<p style="margin: 0; color: #856404; font-size: 13px;">
+						<?php esc_html_e( 'The customer agreements database table has not been created. This may happen if the plugin was not activated correctly or if there was an issue during installation.', 'hezarfen-for-woocommerce' ); ?>
+					</p>
+				</div>
+				<p style="margin: 15px 0;">
+					<a href="https://wordpress.org/support/plugin/hezarfen-for-woocommerce/" class="button button-primary" target="_blank" rel="noopener noreferrer">
+						<?php esc_html_e( 'Contact Intense Support', 'hezarfen-for-woocommerce' ); ?> →
+					</a>
+				</p>
+				<p style="font-size: 11px; margin-top: 15px; color: #999;">
+					<em><?php esc_html_e( 'Powered by', 'hezarfen-for-woocommerce' ); ?> <strong>Hezarfen for WooCommerce</strong></em>
+				</p>
+			</div>
+			<?php
 			return;
 		}
 		
@@ -62,9 +92,35 @@ class Order_Agreements {
 		$agreements = $this->get_saved_agreements( $order_id );
 		
 		if ( empty( $agreements ) ) {
+			// Get current setting
+			$settings = get_option( 'hezarfen_mss_settings', array() );
+			$timing = isset( $settings['agreement_creation_timing'] ) ? $settings['agreement_creation_timing'] : 'processing';
+			
+			// Define timing labels
+			$timing_labels = array(
+				'processing' => __( 'When order status becomes Processing', 'hezarfen-for-woocommerce' ),
+				'new_order'  => __( 'When new order is placed', 'hezarfen-for-woocommerce' ),
+			);
+			
+			$current_timing_label = isset( $timing_labels[ $timing ] ) ? $timing_labels[ $timing ] : $timing_labels['processing'];
+			$settings_url = admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=contracts_settings' );
 			?>
 			<div style="text-align: center; padding: 20px; color: #666;">
 				<p><?php esc_html_e( 'No customer agreements found for this order.', 'hezarfen-for-woocommerce' ); ?></p>
+				<p style="font-size: 12px; margin-top: 10px;">
+					<?php
+					if ( $timing === 'processing' ) {
+						esc_html_e( 'Agreements will be created when the order status changes to Processing.', 'hezarfen-for-woocommerce' );
+					} else {
+						esc_html_e( 'Agreements are created immediately when a new order is placed.', 'hezarfen-for-woocommerce' );
+					}
+					?>
+				</p>
+				<p style="font-size: 12px; margin-top: 5px;">
+					<a href="<?php echo esc_url( $settings_url ); ?>" target="_blank">
+						<?php esc_html_e( 'Change Agreement Settings', 'hezarfen-for-woocommerce' ); ?> →
+					</a>
+				</p>
 				<p style="font-size: 11px; margin-top: 15px;">
 					<em><?php esc_html_e( 'Powered by', 'hezarfen-for-woocommerce' ); ?> <strong>Hezarfen for WooCommerce</strong></em>
 				</p>

@@ -6,13 +6,13 @@ msgstr ""
 "Language: tr_TR\n"
 "Language-Team: Türkçe\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"PO-Revision-Date: 2025-09-17 15:32+0000\n"
+"PO-Revision-Date: 2025-09-30 21:52+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "Last-Translator: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Loco-Version: 2.6.9; wp-6.8.2"
+"X-Loco-Version: 2.8.0; wp-6.8.3; php-8.0.30"
 
 #. %s plugin name
 #: includes/class-hezarfen-wc-helper.php:218
@@ -28,7 +28,7 @@ msgstr ""
 msgid "850xxxxxxx, 312XXXXXXX etc."
 msgstr "850xxxxxxx, 312XXXXXXX vb."
 
-#: includes/contracts/admin/class-order-agreements.php:132
+#: includes/contracts/admin/class-order-agreements.php:188
 msgid "Accepted:"
 msgstr "Kabul Edildi:"
 
@@ -45,7 +45,7 @@ msgstr "Eylem"
 msgid "Action Type"
 msgstr "Eylem Türü"
 
-#: includes/contracts/admin/class-order-agreements.php:84
+#: includes/contracts/admin/class-order-agreements.php:140
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:540
 msgid "Actions"
 msgstr "İşlemler"
@@ -97,13 +97,22 @@ msgstr "Sözleşme Kabul Edildi:"
 msgid "Agreement Creation Timing"
 msgstr "Sözleşme Oluşturma Zamanlaması"
 
-#: includes/contracts/admin/class-order-agreements.php:81
+#: includes/contracts/admin/class-order-agreements.php:137
 msgid "Agreement Name"
 msgstr "Sözleşme Adı"
 
 #: includes/contracts/frontend/class-customer-agreements.php:106
 msgid "Agreements"
 msgstr "Sözleşmeler"
+
+#: includes/contracts/admin/class-order-agreements.php:115
+msgid "Agreements are created immediately when a new order is placed."
+msgstr "Sözleşmeler, yeni bir sipariş verildiğinde hemen oluşturulur."
+
+#: includes/contracts/admin/class-order-agreements.php:113
+msgid "Agreements will be created when the order status changes to Processing."
+msgstr ""
+"Sipariş durumu Hazırlanıyor olarak değiştiğinde sözleşmeler oluşturulacaktır."
 
 #: packages/manual-shipment-tracking/includes/admin/class-settings.php:371
 msgid "An error occured when installing and activating the PandaSMS plugin."
@@ -165,8 +174,9 @@ msgstr ""
 "{order_total}"
 
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:104
+#, fuzzy
 msgid "Aylık alt gönderim limiti yoktur"
-msgstr ""
+msgstr "Aylık alt gönderim limiti yoktur"
 
 #: includes/admin/settings/class-hezarfen-settings-hezarfen.php:173
 #: includes/admin/settings/class-hezarfen-settings-hezarfen.php:383
@@ -188,7 +198,7 @@ msgstr "Barkod"
 msgid "BCC"
 msgstr "BCC (Gizli Alıcı)"
 
-#: includes/class-hezarfen.php:142
+#: includes/class-hezarfen.php:140
 msgid ""
 "Because the Woocommerce Checkout Blocks feature is active on your website, "
 "<strong>Hezarfen for Woocommerce</strong> plugin doesn't work on the "
@@ -315,6 +325,10 @@ msgstr "CC"
 #: packages/manual-shipment-tracking/includes/courier-companies/class-cdek.php:38
 msgid "CDEK"
 msgstr "CDEK"
+
+#: includes/contracts/admin/class-order-agreements.php:121
+msgid "Change Agreement Settings"
+msgstr "Sözleşme Ayarlarını Değiştir"
 
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:364
 msgid "Check"
@@ -504,6 +518,10 @@ msgstr "Consumer Secret"
 msgid "Consumer Secret from Hepsijet API Relay plugin"
 msgstr "Hepsijet API Relay eklentisinden Tüketici Gizli Anahtarı"
 
+#: includes/contracts/admin/class-order-agreements.php:80
+msgid "Contact Intense Support"
+msgstr "Intense Yazılım - Destek ile İletişime Geçin"
+
 #: includes/contracts/admin/class-contracts-settings.php:79
 #, fuzzy
 msgid "Contract Display Settings"
@@ -527,6 +545,10 @@ msgstr "Sözleşmeler ve Anlaşmalar"
 #: includes/contracts/core/class-contract-renderer.php:445
 msgid "Contracts and Forms"
 msgstr "Sözleşmeler ve Formlar"
+
+#: includes/contracts/admin/class-order-agreements.php:72
+msgid "Contracts table not found in database!"
+msgstr "Sözleşmeler tablosu veritabanında bulunamadı!"
 
 #: includes/contracts/admin/class-contracts-settings.php:543
 msgid "Corporate tax number"
@@ -582,7 +604,7 @@ msgid "Current Variables"
 msgstr "Mevcut Değişkenler"
 
 #: includes/contracts/admin/class-order-agreements.php:40
-#: includes/contracts/admin/class-order-agreements.php:114
+#: includes/contracts/admin/class-order-agreements.php:170
 msgid "Customer Agreements"
 msgstr "Müşteri Sözleşmeleri"
 
@@ -614,7 +636,7 @@ msgstr "Müşteri Telefon"
 msgid "Customer:"
 msgstr "Müşteri:"
 
-#: includes/contracts/admin/class-order-agreements.php:82
+#: includes/contracts/admin/class-order-agreements.php:138
 msgid "Date Accepted"
 msgstr "Kabul Tarihi"
 
@@ -1057,7 +1079,7 @@ msgstr "Hezarfen Kargo Takip & SMS Bildirimleri"
 msgid "Hezarfen Invoice Fields"
 msgstr "Hezarfen Fatura Alanları"
 
-#: includes/class-hezarfen.php:246
+#: includes/class-hezarfen.php:244
 msgid "Hezarfen SMS Migration Complete!"
 msgstr "Hezarfen SMS taşıma/uyumluluk işlemi tamamlandı"
 
@@ -1175,7 +1197,7 @@ msgstr ""
 "gerekir.%1$s entegrasyonunun çalışabilmesi için %2$s eklentisinin aktif "
 "olması gerekir."
 
-#: includes/class-hezarfen.php:126
+#: includes/class-hezarfen.php:124
 msgid ""
 "In order to <strong>Hezarfen for WooCommerce</strong> plugin work, please "
 "remove the <strong>Intense Türkiye İl İlçe Eklentisi For WooCommerce</strong>"
@@ -1256,8 +1278,9 @@ msgstr ""
 "sayfamızdan ulaşabilirsiniz:"
 
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:118
+#, fuzzy
 msgid "Intense&Hepsijet İşbirliği"
-msgstr ""
+msgstr "Intense&Hepsijet İşbirliği"
 
 #: packages/manual-shipment-tracking/includes/courier-companies/class-hepsijet-integration.php:815
 msgid "Invalid balance response"
@@ -1286,13 +1309,13 @@ msgstr "Fatura tipi"
 msgid "Invoice type"
 msgstr "Fatura tipi"
 
-#: includes/contracts/admin/class-order-agreements.php:83
+#: includes/contracts/admin/class-order-agreements.php:139
 msgid "IP Address"
 msgstr "IP Adresi"
 
 #: includes/contracts/core/class-post-order-processor.php:257
 #: includes/contracts/frontend/class-customer-agreements.php:189
-#: includes/contracts/admin/class-order-agreements.php:136
+#: includes/contracts/admin/class-order-agreements.php:192
 msgid "IP Address:"
 msgstr "IP Adresi:"
 
@@ -1328,12 +1351,14 @@ msgid "Jetizz"
 msgstr "Jetizz"
 
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:111
+#, fuzzy
 msgid "Kargo adresinizden alınır"
-msgstr ""
+msgstr "Kargo adresinizden alınır"
 
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:97
+#, fuzzy
 msgid "Kargo anlaşması gerekmez"
-msgstr ""
+msgstr "Kargo anlaşması gerekmez"
 
 #: packages/manual-shipment-tracking/includes/courier-companies/class-kargo-turk.php:38
 msgid "Kargo Türk"
@@ -1460,7 +1485,7 @@ msgstr "Mesaj Şablonu:"
 msgid "Modal"
 msgstr "Modal"
 
-#: includes/class-hezarfen.php:82 includes/Checkout.php:536
+#: includes/class-hezarfen.php:80 includes/Checkout.php:536
 msgid "Neighborhood"
 msgstr "Mahalle"
 
@@ -1533,7 +1558,7 @@ msgstr "Hayır"
 msgid "No agreements were saved for this order."
 msgstr "Bu sipariş için hiçbir sözleşme kaydedilmedi."
 
-#: includes/contracts/admin/class-order-agreements.php:67
+#: includes/contracts/admin/class-order-agreements.php:109
 msgid "No customer agreements found for this order."
 msgstr "Bu sipariş için müşteri sözleşmesi bulunamadı."
 
@@ -1572,6 +1597,10 @@ msgstr "Beklemede"
 msgid "Order #%s - Customer Agreements Saved"
 msgstr "Sipariş #%s - Müşteri Sözleşmeleri Kaydedildi"
 
+#: packages/manual-shipment-tracking/includes/admin/class-admin-ajax.php:662
+msgid "Order #:"
+msgstr "Sipariş no:"
+
 #: packages/manual-shipment-tracking/includes/courier-companies/class-hepsijet-integration.php:1095
 msgid "Order completed - shipment delivered"
 msgstr "Sipariş tamamlandı - gönderi teslim edildi"
@@ -1587,8 +1616,19 @@ msgstr "Sipariş tarihi"
 #. Order Variables
 #: includes/contracts/core/class-post-order-processor.php:252
 #: includes/contracts/admin/class-contracts-settings.php:490
+#: packages/manual-shipment-tracking/includes/admin/class-admin-ajax.php:654
 msgid "Order Information"
 msgstr "Sipariş Bilgileri"
+
+#: packages/manual-shipment-tracking/includes/admin/class-admin-ajax.php:707
+#, fuzzy
+msgid "Order Items"
+msgstr "Sipariş Kalemleri"
+
+#: packages/manual-shipment-tracking/includes/admin/class-admin-ajax.php:876
+#, fuzzy
+msgid "Order Note"
+msgstr "Sipariş Notu"
 
 #: includes/class-sms-automation.php:380 includes/class-sms-automation.php:412
 msgid "Order Number"
@@ -1596,7 +1636,7 @@ msgstr "Sipariş Numarası"
 
 #: includes/contracts/admin/class-contracts-settings.php:491
 msgid "Order number"
-msgstr "Sipariş numarası"
+msgstr "Sipariş no"
 
 #: includes/contracts/core/class-post-order-processor.php:253
 msgid "Order Number:"
@@ -1715,6 +1755,11 @@ msgstr "Bireysel"
 msgid "Phone Number"
 msgstr "Telefon Numarası:"
 
+#: packages/manual-shipment-tracking/includes/admin/class-admin-ajax.php:677
+#, fuzzy
+msgid "Phone:"
+msgstr "Telefon:"
+
 #: includes/admin/settings/class-hezarfen-settings-hezarfen.php:1127
 msgid "Please enter username and password first"
 msgstr "Lütfen öncelikle kullanıcı adı ve şifrenizi giriniz"
@@ -1741,10 +1786,11 @@ msgstr "Lütfen şifreleme anahtarını wp-config.php dosyasına yerleştirin."
 msgid "Please select a message header"
 msgstr "Lütfen gönderim başlığını seçiniz"
 
-#: includes/contracts/admin/class-order-agreements.php:69
-#: includes/contracts/admin/class-order-agreements.php:104
+#: includes/contracts/admin/class-order-agreements.php:84
+#: includes/contracts/admin/class-order-agreements.php:125
+#: includes/contracts/admin/class-order-agreements.php:160
 msgid "Powered by"
-msgstr "Güçlendiren"
+msgstr "Powered by"
 
 #: includes/contracts/admin/class-contracts-settings.php:243
 msgid "Pre-Information Form"
@@ -1755,13 +1801,30 @@ msgstr "Ön Bilgilendirme Formu"
 msgid "Preparing barcode label..."
 msgstr "Barkod etiketi hazırlama..."
 
+#: includes/contracts/core/class-template-processor.php:191
+#: includes/contracts/core/class-template-processor.php:287
+msgid "Price (incl. tax)"
+msgstr "Fiyat (vergiler dahil)"
+
 #: includes/class-sms-automation.php:593
 msgid "Processing"
 msgstr "Hazırlanıyor"
 
+#: includes/contracts/core/class-template-processor.php:189
+#: includes/contracts/core/class-template-processor.php:285
+#: packages/manual-shipment-tracking/includes/admin/class-admin-ajax.php:717
+#, fuzzy
+msgid "Product"
+msgstr "Ürün"
+
 #: packages/manual-shipment-tracking/includes/courier-companies/class-ptt.php:38
 msgid "PTT Kargo"
 msgstr "PTT Kargo"
+
+#: includes/contracts/core/class-template-processor.php:190
+#: includes/contracts/core/class-template-processor.php:286
+msgid "Quantity"
+msgstr "Adet"
 
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:197
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:294
@@ -1868,7 +1931,7 @@ msgid "Select action..."
 msgstr "Eylem seçin..."
 
 #: includes/Autoload.php:67 includes/class-hezarfen-wc-helper.php:24
-#: includes/class-hezarfen.php:83
+#: includes/class-hezarfen.php:81
 msgid "Select an option"
 msgstr "Lütfen seçiniz"
 
@@ -2183,6 +2246,11 @@ msgstr ""
 msgid "T.C. Identity Number"
 msgstr "T.C. Kimlik Numarası"
 
+#: packages/manual-shipment-tracking/includes/admin/class-admin-ajax.php:669
+#, fuzzy
+msgid "Tarih:"
+msgstr "Tarih:"
+
 #: includes/contracts/admin/class-contracts-settings.php:496
 msgid "Tax amount"
 msgstr "Vergi tutarı"
@@ -2206,6 +2274,16 @@ msgstr "TC Kimlik No hatalı"
 #: packages/manual-shipment-tracking/includes/admin/class-admin-orders.php:140
 msgid "Thank you for supporting Hezarfen! 🌟"
 msgstr "Hezarfen'i desteklediğiniz için teşekkürler! 🌟"
+
+#: includes/contracts/admin/class-order-agreements.php:75
+msgid ""
+"The customer agreements database table has not been created. This may happen "
+"if the plugin was not activated correctly or if there was an issue during "
+"installation."
+msgstr ""
+"Müşteri sözleşmeleri veritabanı tablosu bulunamadı. Bu durum, eklenti doğru "
+"şekilde etkinleştirilmemişse veya kurulum sırasında bir sorun yaşanmışsa "
+"meydana gelebilir."
 
 #: packages/manual-shipment-tracking/templates/order-edit/metabox-shipment.php:521
 msgid "There are no tracking numbers added to the tracking list."
@@ -2268,7 +2346,12 @@ msgstr "Bugünün tarihi"
 msgid "Toggle password visibility"
 msgstr "Şifre görünülürlüğü"
 
-#: includes/class-hezarfen.php:75 includes/Checkout.php:519
+#: packages/manual-shipment-tracking/includes/admin/class-admin-ajax.php:718
+#, fuzzy
+msgid "Total"
+msgstr "Toplam"
+
+#: includes/class-hezarfen.php:73 includes/Checkout.php:519
 msgid "Town / City"
 msgstr "İlçe"
 
@@ -2283,7 +2366,7 @@ msgid "Tracking Information"
 msgstr "Kargo Takip Bilgileri"
 
 #. %s billing email
-#: packages/manual-shipment-tracking/includes/email/class-email.php:58
+#: packages/manual-shipment-tracking/includes/email/class-email.php:59
 #, php-format
 msgid "Tracking information sent to %s"
 msgstr "Müşterinin %s e-posta adresine kargo takip bilgileri gönderilmiştir."
@@ -2363,7 +2446,7 @@ msgstr ""
 "WordPress sayfalarını sözleşme şablonları olarak kullanın. + butonu ile yeni "
 "sözleşmeler ekleyebilir ve X butonu ile silebilirsiniz."
 
-#: includes/contracts/admin/class-order-agreements.php:142
+#: includes/contracts/admin/class-order-agreements.php:198
 msgid "User Agent:"
 msgstr "Kullanıcı Aracısı:"
 
@@ -2371,7 +2454,7 @@ msgstr "Kullanıcı Aracısı:"
 msgid "Username and password are required"
 msgstr "Kullanıcı adı ve şifre gereklidir"
 
-#: includes/contracts/admin/class-order-agreements.php:95
+#: includes/contracts/admin/class-order-agreements.php:151
 msgid "View"
 msgstr "Görüntüle"
 
@@ -2403,14 +2486,15 @@ msgstr ""
 "Hezarfen'in nasıl kullanılacağını öğrenmek için eğitim videolarını izleyin"
 
 #: includes/contracts/admin/class-contracts-settings.php:73
+#: includes/contracts/admin/class-order-agreements.php:102
 #, fuzzy
 msgid "When new order is placed"
 msgstr "Yeni sipariş verildiğinde"
 
 #: includes/contracts/admin/class-contracts-settings.php:72
-#, fuzzy
+#: includes/contracts/admin/class-order-agreements.php:101
 msgid "When order status becomes Processing"
-msgstr "Sipariş durumu İşleniyor olduğunda"
+msgstr "Sipariş durumu Hazırlanıyor olduğunda"
 
 #: includes/admin/settings/class-hezarfen-settings-hezarfen.php:487
 #: includes/admin/settings/class-hezarfen-settings-hezarfen.php:1148
@@ -2418,17 +2502,17 @@ msgstr "Sipariş durumu İşleniyor olduğunda"
 msgid "When order status changes to %1$s, send SMS via %2$s to %3$s"
 msgstr "Sipariş durumu %1$s olduğunda, %3$s'a %2$s ile SMS gönder"
 
-#: includes/contracts/core/class-template-processor.php:236
+#: includes/contracts/core/class-template-processor.php:260
 msgid "Will be assigned after order"
 msgstr "Sipariş sonrası atanacak"
 
 #: includes/contracts/core/class-template-processor.php:106
-#: includes/contracts/core/class-template-processor.php:238
+#: includes/contracts/core/class-template-processor.php:262
 msgid "Will be determined after order"
 msgstr "Sipariş sonrası belirlenecek"
 
-#: includes/contracts/core/class-template-processor.php:244
-#: includes/contracts/core/class-template-processor.php:306
+#: includes/contracts/core/class-template-processor.php:268
+#: includes/contracts/core/class-template-processor.php:351
 msgid "Will be determined at payment"
 msgstr "Ödeme sırasında belirlenecek"
 
@@ -2535,7 +2619,7 @@ msgstr "Sözleşmeleriniz"
 msgid "Your API password"
 msgstr "API şifreniz"
 
-#: includes/class-hezarfen.php:249
+#: includes/class-hezarfen.php:247
 #, php-format
 msgid ""
 "Your legacy SMS settings have been automatically migrated to the new SMS "
