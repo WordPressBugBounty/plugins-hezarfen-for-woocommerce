@@ -813,7 +813,7 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 					<?php esc_html_e( 'Hezarfen, bugün 2bin+ site tarafından kullanılıyor ve her geçen gün büyüyor. Hezarfen’in gelecek büyük versiyonu olan 3.0 için özellik geliştirme planlarımızı yaparken sizin de geri bildiriminizi almak istedik. Hezarfen’e birden fazla dikeyde geliştirerek, bazı özellikler için farklı eklenti kullanma ihtiyaçlarını ortadan kaldırmayı ve bu sayede WooCommerce altyapılarının stabilitesini arttırmayı amaçlıyoruz.', 'hezarfen-for-woocommerce' ); ?>
 				</p>
 				<p style="font-size: 14px; color: #666; margin-top: 10px;">
-					<?php esc_html_e( 'Hangi özelliklerin geliştirilmesini istersiniz? Her kategoriden en fazla 5 özellik seçebilirsiniz.', 'hezarfen-for-woocommerce' ); ?>
+					<?php esc_html_e( 'Hangi özelliklerin geliştirilmesini istersiniz? Her kategoriden en fazla 5 özellik seçebilirsiniz. Toplanan veriler geliştirme planlamamıza ışık tutacaktır, nihai karar ekibimiz tarafından değerlendirilecektir. Şimdiden teşekkür ederiz!', 'hezarfen-for-woocommerce' ); ?>
 				</p>
 			</div>
 
@@ -840,6 +840,11 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 						<?php esc_html_e( 'Pro Paket (Ücretli Sürüm) Özellikleri', 'hezarfen-for-woocommerce' ); ?>
 						<span id="pro-counter" style="font-size: 13px; color: #666; font-weight: normal;">(0/5 <?php esc_html_e( 'seçildi', 'hezarfen-for-woocommerce' ); ?>)</span>
 					</h3>
+					<?php if( ! defined( 'HEZARFEN_PRO_VERSION' ) ): ?>
+						<p style="color: #3194ed">
+						Pro sürümünü kullanmasanız bile geri bildiriminiz bizim için çok kıymetli. Paylaştığınız görüşler yalnızca Hezarfen’i geliştirmemize yardımcı olur; Pro sürümünü satın alma gibi bir zorunluluk bulunmaz. Pro sürümün fiyat/özellik dengesini iyileştirmek için görüş topluyoruz.
+						</p>
+					<?php endif; ?>
 					<div class="hezarfen-features-list" data-type="pro" data-max="5">
 						<?php foreach ( $pro_features as $index => $feature ) : ?>
 							<label class="hezarfen-feature-item" data-feature-type="pro" style="display: flex; align-items: flex-start; padding: 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; background: #fff;">
