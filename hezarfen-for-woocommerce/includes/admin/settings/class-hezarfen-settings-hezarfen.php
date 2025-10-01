@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit();
 
 use Hezarfen\Inc\Data\PostMetaEncryption;
 use Hezarfen\Inc\Helper;
+use Hezarfen_Roadmap_Helper;
 
 if ( class_exists( 'Hezarfen_Settings_Hezarfen', false ) ) {
 	return new Hezarfen_Settings_Hezarfen();
@@ -29,6 +30,8 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts_and_styles' ) );
 		add_action( 'woocommerce_admin_field_sms_rules_button', array( $this, 'output_sms_rules_button' ) );
+		add_action( 'woocommerce_admin_field_roadmap_voting', array( $this, 'output_roadmap_voting' ) );
+		// Note: AJAX action is registered in main Hezarfen class to ensure it's always available
 
 		parent::__construct();
 	}
@@ -39,13 +42,27 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 	 * @return array<string, string>
 	 */
 	protected function get_own_sections() {
-		$sections = array(
-			''              => __( 'Training', 'hezarfen-for-woocommerce' ),
-			'general'       => __( 'General', 'hezarfen-for-woocommerce' ),
-			'encryption'    => __( 'Encryption', 'hezarfen-for-woocommerce' ),
-			'checkout_page' => __( 'Checkout Page Settings', 'hezarfen-for-woocommerce' ),
-			'sms_settings'  => __( 'SMS Settings', 'hezarfen-for-woocommerce' ),
-		);
+		// Build base sections
+		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '<=' ) ) {
+			// Version <= 2.7.30: Roadmap is default, Training is separate
+			$sections = array(
+				''              => __( 'Roadmap', 'hezarfen-for-woocommerce' ),
+				'training'      => __( 'Training', 'hezarfen-for-woocommerce' ),
+				'general'       => __( 'General', 'hezarfen-for-woocommerce' ),
+				'encryption'    => __( 'Encryption', 'hezarfen-for-woocommerce' ),
+				'checkout_page' => __( 'Checkout Page Settings', 'hezarfen-for-woocommerce' ),
+				'sms_settings'  => __( 'SMS Settings', 'hezarfen-for-woocommerce' ),
+			);
+		} else {
+			// Version > 2.7.30: Training is default, no Roadmap
+			$sections = array(
+				''              => __( 'Training', 'hezarfen-for-woocommerce' ),
+				'general'       => __( 'General', 'hezarfen-for-woocommerce' ),
+				'encryption'    => __( 'Encryption', 'hezarfen-for-woocommerce' ),
+				'checkout_page' => __( 'Checkout Page Settings', 'hezarfen-for-woocommerce' ),
+				'sms_settings'  => __( 'SMS Settings', 'hezarfen-for-woocommerce' ),
+			);
+		}
 
 		// if checkout field is active, show the section.
 		if ( Helper::is_show_tax_fields() ) {
@@ -62,13 +79,32 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 	}
 
 	/**
-	 * Get settings for the default section (Training).
+	 * Get settings for the default section (Roadmap or Training).
 	 *
 	 * @return array<array<string, string>>
 	 */
 	protected function get_settings_for_default_section() {
-		// Default section is now Training, which doesn't need form fields
-		// since it's handled by output_training_section()
+		// If version > 2.7.30, default is Training (no fields needed)
+		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '>' ) ) {
+			return array();
+		}
+		
+		// Otherwise, default is Roadmap
+		return array(
+			array(
+				'type' => 'roadmap_voting',
+				'id'   => 'hezarfen_roadmap_voting',
+			),
+		);
+	}
+
+	/**
+	 * Get settings for the Training section.
+	 *
+	 * @return array<array<string, string>>
+	 */
+	protected function get_settings_for_training_section() {
+		// Training section is handled by output_training_section()
 		return array();
 	}
 
@@ -705,7 +741,18 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 
 			require 'views/encryption.php';
 		} elseif ( '' === $current_section ) {
-			// Default section is now Training
+			// Default section - Roadmap (if version <= 2.7.30) or Training (if version > 2.7.30)
+			$hide_save_button = true;
+			
+			if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '<=' ) ) {
+				// Show Roadmap
+				$settings = $this->get_settings_for_section( $current_section );
+				WC_Admin_Settings::output_fields( $settings );
+			} else {
+				// Show Training
+				$this->output_training_section();
+			}
+		} elseif ( 'training' === $current_section ) {
 			$hide_save_button = true;
 			$this->output_training_section();
 		} else {
@@ -717,6 +764,144 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 				$this->output_netgsm_credentials_modal();
 			}
 		}
+	}
+
+	/**
+	 * Output roadmap voting interface
+	 *
+	 * @param array $value Field data
+	 * @return void
+	 */
+	public function output_roadmap_voting( $value ) {
+		// Check if user has already voted
+		$has_voted = get_option( 'hezarfen_v3_roadmap_last_vote', false );
+		
+		if ( $has_voted ) {
+			// Show minimal thank you message
+			$vote_data = get_option( 'hezarfen_roadmap_votes', array() );
+			$vote_date = isset( $vote_data['timestamp'] ) ? $vote_data['timestamp'] : '';
+			?>
+			<div class="hezarfen-roadmap-container" style="max-width: 600px; margin: 80px auto; text-align: center;">
+				<div style="font-size: 48px; margin-bottom: 20px; opacity: 0.9;">✓</div>
+				<h2 style="color: #2c3e50; font-size: 24px; margin: 0 0 12px 0; font-weight: 500;">
+					<?php esc_html_e( 'Teşekkür Ederiz', 'hezarfen-for-woocommerce' ); ?>
+				</h2>
+				<p style="color: #7f8c8d; font-size: 15px; margin: 0;">
+					<?php esc_html_e( 'Oylarınız e-posta ile info@intense.com.tr adresine gönderildi.', 'hezarfen-for-woocommerce' ); ?>
+				</p>
+				<?php if ( $vote_date ) : ?>
+					<p style="color: #bdc3c7; font-size: 13px; margin: 15px 0 0 0;">
+						<?php echo esc_html( date( 'd.m.Y H:i:s', strtotime( $vote_date ) ) ); ?>
+					</p>
+				<?php endif; ?>
+			</div>
+			<?php
+			return;
+		}
+		
+		// Load helper class
+		require_once WC_HEZARFEN_UYGULAMA_YOLU . 'includes/admin/settings/class-hezarfen-roadmap-helper.php';
+		
+		$free_features = Hezarfen_Roadmap_Helper::get_free_features();
+		$pro_features = Hezarfen_Roadmap_Helper::get_pro_features();
+		?>
+		<div class="hezarfen-roadmap-container" style="max-width: 1200px; margin: 20px 0;">
+			<div class="hezarfen-roadmap-header" style="margin-bottom: 30px;">
+				<h2><?php esc_html_e( 'Hezarfen Geliştirme Yol Haritası (v3.0 - gelecek büyük sürüm)', 'hezarfen-for-woocommerce' ); ?></h2>
+
+				<p style="font-size: 14px; color: #666; margin-top: 10px;">
+					<?php esc_html_e( 'Hezarfen, bugün 2bin+ site tarafından kullanılıyor ve her geçen gün büyüyor. Hezarfen’in gelecek büyük versiyonu olan 3.0 için özellik geliştirme planlarımızı yaparken sizin de geri bildiriminizi almak istedik. Hezarfen’e birden fazla dikeyde geliştirerek, bazı özellikler için farklı eklenti kullanma ihtiyaçlarını ortadan kaldırmayı ve bu sayede WooCommerce altyapılarının stabilitesini arttırmayı amaçlıyoruz.', 'hezarfen-for-woocommerce' ); ?>
+				</p>
+				<p style="font-size: 14px; color: #666; margin-top: 10px;">
+					<?php esc_html_e( 'Hangi özelliklerin geliştirilmesini istersiniz? Her kategoriden en fazla 5 özellik seçebilirsiniz.', 'hezarfen-for-woocommerce' ); ?>
+				</p>
+			</div>
+
+			<div class="hezarfen-roadmap-sections" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
+				<!-- Free Features -->
+				<div class="hezarfen-roadmap-section">
+					<h3 style="margin-bottom: 15px; color: #0073aa;">
+						<?php esc_html_e( 'Ücretsiz Sürüm Özellikleri', 'hezarfen-for-woocommerce' ); ?>
+						<span id="free-counter" style="font-size: 13px; color: #666; font-weight: normal;">(0/5 <?php esc_html_e( 'seçildi', 'hezarfen-for-woocommerce' ); ?>)</span>
+					</h3>
+					<div class="hezarfen-features-list" data-type="free" data-max="5">
+						<?php foreach ( $free_features as $index => $feature ) : ?>
+							<label class="hezarfen-feature-item" data-feature-type="free" style="display: flex; align-items: flex-start; padding: 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; background: #fff;">
+								<input type="checkbox" name="free_features[]" value="<?php echo esc_attr( $index ); ?>" style="margin: 3px 10px 0 0; cursor: pointer;">
+								<span style="flex: 1; font-size: 13px; line-height: 1.5;"><?php echo esc_html( $feature ); ?></span>
+							</label>
+						<?php endforeach; ?>
+					</div>
+				</div>
+
+				<!-- Pro Features -->
+				<div class="hezarfen-roadmap-section">
+					<h3 style="margin-bottom: 15px; color: #16a34a;">
+						<?php esc_html_e( 'Pro Paket (Ücretli Sürüm) Özellikleri', 'hezarfen-for-woocommerce' ); ?>
+						<span id="pro-counter" style="font-size: 13px; color: #666; font-weight: normal;">(0/5 <?php esc_html_e( 'seçildi', 'hezarfen-for-woocommerce' ); ?>)</span>
+					</h3>
+					<div class="hezarfen-features-list" data-type="pro" data-max="5">
+						<?php foreach ( $pro_features as $index => $feature ) : ?>
+							<label class="hezarfen-feature-item" data-feature-type="pro" style="display: flex; align-items: flex-start; padding: 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; background: #fff;">
+								<input type="checkbox" name="pro_features[]" value="<?php echo esc_attr( $index ); ?>" style="margin: 3px 10px 0 0; cursor: pointer;">
+								<span style="flex: 1; font-size: 13px; line-height: 1.5;"><?php echo esc_html( $feature ); ?></span>
+							</label>
+						<?php endforeach; ?>
+					</div>
+					
+					<!-- Current Features Info -->
+					<div style="margin-top: 25px; padding: 15px; background: #f9f9f9; border-radius: 4px; border: 1px solid #e0e0e0;">
+						<h4 style="margin: 0 0 10px 0; font-size: 13px; color: #16a34a; font-weight: 600;">
+							<?php esc_html_e( 'Mevcut Pro Paket Özellikleri:', 'hezarfen-for-woocommerce' ); ?>
+						</h4>
+						<p style="margin: 0; font-size: 12px; color: #555; line-height: 1.6;">
+							<?php esc_html_e( 'Yurtiçi, DHL, Hepsijet, KolayGelsin, Aras, Sürat kargo entegrasyonları tek pakette', 'hezarfen-for-woocommerce' ); ?>
+							<?php
+							// Show pricing only if before November 1, 2025
+							$cutoff_date = strtotime( '2025-11-01' );
+							$current_date = current_time( 'timestamp' );
+							
+							if ( $current_date < $cutoff_date ) :
+							?>
+								<a target="_blank" rel="noopener noreferrer" href="https://intense.com.tr/woocommerce-kargo-entegrasyonu/"><span style="display: inline-block; margin-top: 6px; padding: 4px 10px; background: #16a34a; color: white; border-radius: 3px; font-size: 12px; font-weight: 600;">
+									5943TL+KDV (1 site için 1 yıllık destek ve güncelleştirme)
+								</span></a>
+							<?php endif; ?>
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Additional Details -->
+			<div class="hezarfen-roadmap-details" style="margin-top: 30px;">
+				<label for="roadmap-details" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #333;">
+					<?php esc_html_e( 'Eklemek istediğiniz ek bilgi veya önerileriniz:', 'hezarfen-for-woocommerce' ); ?>
+					<span style="font-weight: normal; color: #666; font-size: 12px;"><?php esc_html_e( '(opsiyonel)', 'hezarfen-for-woocommerce' ); ?></span>
+				</label>
+				<textarea 
+					id="roadmap-details" 
+					name="roadmap_details" 
+					rows="4" 
+					placeholder="<?php esc_attr_e( 'Seçtiğiniz özellikler hakkında ek açıklamalar, özel istekleriniz veya diğer önerilerinizi buraya yazabilirsiniz...', 'hezarfen-for-woocommerce' ); ?>"
+					style="width: 100%; max-width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif; resize: vertical; min-height: 100px; transition: border-color 0.2s ease;"
+					onfocus="this.style.borderColor='#2271b1'"
+					onblur="this.style.borderColor='#ddd'"
+				></textarea>
+			</div>
+
+			<div class="hezarfen-roadmap-actions" style="margin-top: 25px; text-align: center;">
+				<p style="font-size: 12px; color: #666; margin: 0 0 15px 0; opacity: 0.85;">
+					<?php esc_html_e( 'Seçimleriniz info@intense.com.tr adresine e-posta ile gönderilecektir. Paylaşılacak veriler: oylamanız, alan adınız, SMTP gönderimi yapan e-posta adresiniz (gönderici olarak). Verileriniz üçüncü taraflarla paylaşılmaz veya SPAM gönderim yapılmaz.', 'hezarfen-for-woocommerce' ); ?>
+				</p>
+				<div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+					<button type="button" id="hezarfen-submit-votes" class="button button-primary button-large" style="padding: 8px 40px; font-size: 14px;">
+						<?php esc_html_e( 'Oylarımı Gönder', 'hezarfen-for-woocommerce' ); ?>
+					</button>
+					<span class="hezarfen-vote-message" style="margin-left: 15px; display: none;"></span>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**
@@ -1083,21 +1268,41 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 	 * @return void
 	 */
 	public function enqueue_scripts_and_styles( $hook_suffix ) {
-		global $current_section;
+		// Only proceed if we're on WooCommerce settings page
+		if ( 'woocommerce_page_wc-settings' !== $hook_suffix ) {
+			return;
+		}
 
-		if ( 'woocommerce_page_wc-settings' === $hook_suffix && 'encryption_recovery' === $current_section ) {
+		// Check if we're on Hezarfen tab
+		$tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : '';
+		if ( 'hezarfen' !== $tab ) {
+			return;
+		}
+
+		// Get current section
+		$current_section = isset( $_GET['section'] ) ? sanitize_text_field( $_GET['section'] ) : '';
+
+		if ( 'encryption_recovery' === $current_section ) {
 			wp_enqueue_script( 'wc_hezarfen_settings_js', plugins_url( 'assets/admin/js/settings.js', WC_HEZARFEN_FILE ), array( 'jquery' ), WC_HEZARFEN_VERSION, true );
 			wp_enqueue_style( 'wc_hezarfen_settings_css', plugins_url( 'assets/admin/css/settings.css', WC_HEZARFEN_FILE ), array(), WC_HEZARFEN_VERSION );
 		}
 
-		if ( 'woocommerce_page_wc-settings' === $hook_suffix && '' === $current_section ) {
+		if ( '' === $current_section && version_compare( WC_HEZARFEN_VERSION, '2.7.30', '<=' ) ) {
+			// Roadmap section (only for version <= 2.7.30)
+			wp_enqueue_script( 'wc_hezarfen_roadmap_js', plugins_url( 'assets/admin/js/roadmap.js', WC_HEZARFEN_FILE ), array( 'jquery' ), WC_HEZARFEN_VERSION, true );
+			wp_localize_script( 'wc_hezarfen_roadmap_js', 'hezarfenRoadmap', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce' => wp_create_nonce( 'hezarfen_roadmap_vote' ),
+			) );
+		}
+
+		// Load CSS for Training and Roadmap sections
+		if ( '' === $current_section || 'training' === $current_section ) {
 			wp_enqueue_style( 'wc_hezarfen_settings_css', plugins_url( 'assets/admin/css/settings.css', WC_HEZARFEN_FILE ), array(), WC_HEZARFEN_VERSION );
 		}
 
-		// Load swimming card script on all WooCommerce settings pages to check URL parameters
-		if ( 'woocommerce_page_wc-settings' === $hook_suffix ) {
-			wp_enqueue_script( 'wc_hezarfen_training_js', plugins_url( 'assets/admin/js/training.js', WC_HEZARFEN_FILE ), array( 'jquery' ), WC_HEZARFEN_VERSION, true );
-		}
+		// Load training script on all Hezarfen settings pages (for the swimming subscribe card)
+		wp_enqueue_script( 'wc_hezarfen_training_js', plugins_url( 'assets/admin/js/training.js', WC_HEZARFEN_FILE ), array( 'jquery' ), WC_HEZARFEN_VERSION, true );
 
 		if ( 'woocommerce_page_wc-settings' === $hook_suffix && 'sms_settings' === $current_section ) {
 			wp_enqueue_script( 'wc_hezarfen_sms_settings_js', plugins_url( 'assets/admin/js/sms-settings.js', WC_HEZARFEN_FILE ), array( 'jquery' ), WC_HEZARFEN_VERSION . '-' . filemtime( plugin_dir_path( WC_HEZARFEN_FILE ) . 'assets/admin/js/sms-settings.js' ), true );

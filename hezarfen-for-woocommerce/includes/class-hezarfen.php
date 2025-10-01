@@ -9,7 +9,7 @@ namespace Hezarfen\Inc;
 
 defined( 'ABSPATH' ) || exit();
 
-use Automattic\WooCommerce\Utilities\OrderUtil;
+use Automattic\WooCommerce\Utilities\OrderUtil, Hezarfen_Roadmap_Helper;
 
 /**
  * Hezarfen main class.
@@ -53,10 +53,15 @@ class Hezarfen {
 		add_action( 'plugins_loaded', array( $this, 'check_addons_and_show_notices' ) );
 		add_action( 'plugins_loaded', array( $this, 'define_constants' ) );
 		add_action( 'admin_notices', array( $this, 'show_migration_notice' ) );
+		add_action( 'admin_notices', array( $this, 'show_roadmap_contribution_notice' ) );
+		add_action( 'wp_ajax_hezarfen_dismiss_roadmap_notice', array( $this, 'handle_dismiss_roadmap_notice' ) );
 		add_action( 'plugins_loaded', array( $this, 'force_enable_address2_field' ) );
 		add_filter( 'woocommerce_get_settings_pages', array( $this, 'add_hezarfen_setting_page' ) );
 		add_filter( 'woocommerce_get_country_locale', array( $this, 'modify_tr_locale' ), PHP_INT_MAX - 2 );
 		add_filter('woocommerce_rest_prepare_shop_order_object', array( $this, 'add_virtual_order_metas_to_metadata' ), 10, 2);
+		
+		// Register roadmap voting AJAX action
+		add_action( 'wp_ajax_hezarfen_submit_roadmap_votes', array( $this, 'handle_roadmap_vote_submission_proxy' ) );
 	}
 
 	/**
@@ -276,6 +281,214 @@ class Hezarfen {
 		if ( 'hidden' === $address_2_visibility ) {
 			update_option( 'woocommerce_checkout_address_2_field', 'optional' );
 		}
+	}
+
+	/**
+	 * Handle roadmap vote submission via AJAX
+	 *
+	 * @return void
+	 */
+	public function handle_roadmap_vote_submission_proxy() {
+		// Check if roadmap voting is available for this version
+		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '>' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Roadmap oylaması bu sürümde artık mevcut değil.', 'hezarfen-for-woocommerce' ) ) );
+			return;
+		}
+		
+		// Test response to verify function is called
+		if ( ! isset( $_POST['nonce'] ) ) {
+			wp_send_json_error( array( 'message' => 'TEST: No nonce provided' ) );
+			return;
+		}
+		
+
+		// Verify nonce
+		$nonce_check = wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'hezarfen_roadmap_vote' );
+
+		if ( ! $nonce_check ) {
+			wp_send_json_error( array( 'message' => __( 'Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.', 'hezarfen-for-woocommerce' ) ) );
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Yetkisiz erişim.', 'hezarfen-for-woocommerce' ) ) );
+			return;
+		}
+
+		$free_features = isset( $_POST['free_features'] ) ? array_map( 'intval', (array) $_POST['free_features'] ) : array();
+		$pro_features = isset( $_POST['pro_features'] ) ? array_map( 'intval', (array) $_POST['pro_features'] ) : array();
+		$details = isset( $_POST['details'] ) ? sanitize_textarea_field( wp_unslash( $_POST['details'] ) ) : '';
+		
+		// Validate limits
+		if ( count( $free_features ) > 5 ) {
+			wp_send_json_error( array( 'message' => __( 'En fazla 5 ücretsiz özellik seçebilirsiniz.', 'hezarfen-for-woocommerce' ) ) );
+			return;
+		}
+
+		if ( count( $pro_features ) > 5 ) {
+			wp_send_json_error( array( 'message' => __( 'En fazla 5 ücretli özellik seçebilirsiniz.', 'hezarfen-for-woocommerce' ) ) );
+			return;
+		}
+
+		// Include the settings file to get the feature methods
+		require_once WC_HEZARFEN_UYGULAMA_YOLU . 'includes/admin/settings/class-hezarfen-roadmap-helper.php';
+		
+		$all_free_features = Hezarfen_Roadmap_Helper::get_free_features();
+		$all_pro_features = Hezarfen_Roadmap_Helper::get_pro_features();
+
+		// Prepare data
+		$domain = parse_url( home_url(), PHP_URL_HOST );
+		$timestamp = current_time( 'mysql' );
+
+		// Build email content
+		$selected_free_features = array();
+		foreach ( $free_features as $index ) {
+			if ( isset( $all_free_features[ $index ] ) ) {
+				$selected_free_features[] = $all_free_features[ $index ];
+			}
+		}
+
+		$selected_pro_features = array();
+		foreach ( $pro_features as $index ) {
+			if ( isset( $all_pro_features[ $index ] ) ) {
+				$selected_pro_features[] = $all_pro_features[ $index ];
+			}
+		}
+
+		// Create email body
+		$email_subject = sprintf( 'Hezarfen v3.0 Roadmap Oyları - %s', $domain );
+		
+		$email_body = "Hezarfen v3.0 Geliştirme Yol Haritası Oyları\n\n";
+		$email_body .= "Alan Adı: " . $domain . "\n";
+		$email_body .= "Tarih: " . $timestamp . "\n\n";
+		
+		$email_body .= "=== ÜCRETSİZ SÜRÜM ÖZELLİKLERİ (" . count( $selected_free_features ) . "/5) ===\n\n";
+		if ( ! empty( $selected_free_features ) ) {
+			foreach ( $selected_free_features as $i => $feature ) {
+				$email_body .= ( $i + 1 ) . ". " . $feature . "\n";
+			}
+		} else {
+			$email_body .= "Seçim yapılmadı\n";
+		}
+		
+		$email_body .= "\n=== ÜCRETLİ SÜRÜM ÖZELLİKLERİ (" . count( $selected_pro_features ) . "/5) ===\n\n";
+		if ( ! empty( $selected_pro_features ) ) {
+			foreach ( $selected_pro_features as $i => $feature ) {
+				$email_body .= ( $i + 1 ) . ". " . $feature . "\n";
+			}
+		} else {
+			$email_body .= "Seçim yapılmadı\n";
+		}
+		
+		// Add details if provided
+		if ( ! empty( $details ) ) {
+			$email_body .= "\n=== EK BİLGİ VE ÖNERİLER ===\n\n";
+			$email_body .= $details . "\n";
+		}
+
+		// Send email
+		$headers = array( 'Content-Type: text/plain; charset=UTF-8' );
+		$email_sent = wp_mail( 'info@intense.com.tr', $email_subject, $email_body, $headers );
+
+		if ( ! $email_sent ) {
+			wp_send_json_error( array( 
+				'message' => __( 'E-posta gönderimi başarısız oldu. Lütfen daha sonra tekrar deneyin.', 'hezarfen-for-woocommerce' )
+			) );
+			return;
+		}
+
+		// Save locally for reference
+		$data = array(
+			'domain' => $domain,
+			'free_features' => $free_features,
+			'pro_features' => $pro_features,
+			'details' => $details,
+			'timestamp' => $timestamp,
+		);
+		
+		update_option( 'hezarfen_roadmap_votes', $data );
+		update_option( 'hezarfen_v3_roadmap_last_vote', current_time( 'timestamp' ) );
+
+		wp_send_json_success( array(
+			'message' => __( 'Oylarınız info@intense.com.tr adresine e-posta ile gönderildi. Teşekkür ederiz!', 'hezarfen-for-woocommerce' )
+		) );
+	}
+
+	/**
+	 * Show roadmap contribution notice
+	 *
+	 * @return void
+	 */
+	public function show_roadmap_contribution_notice() {
+		// Only show if version <= 2.7.30
+		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '>' ) ) {
+			return;
+		}
+
+		// Don't show if user has already voted
+		if ( get_option( 'hezarfen_roadmap_votes', false ) ) {
+			return;
+		}
+
+		// Don't show if user has dismissed it
+		if ( get_option( 'hezarfen_roadmap_notice_dismissed', false ) ) {
+			return;
+		}
+
+		// Only show on admin pages
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		// Get current screen
+		$screen = get_current_screen();
+		if ( ! $screen ) {
+			return;
+		}
+
+		// Show on WooCommerce related pages
+		if ( strpos( $screen->id, 'woocommerce' ) === false && strpos( $screen->id, 'shop' ) === false ) {
+			return;
+		}
+
+		?>
+		<div class="notice notice-info is-dismissible hezarfen-roadmap-notice" data-notice="roadmap-contribution">
+			<p>
+				<strong><?php esc_html_e( '🗺️ Hezarfen v3.0 Geliştirme Yol Haritası', 'hezarfen-for-woocommerce' ); ?></strong>
+			</p>
+			<p>
+				<?php esc_html_e( 'Hezarfen\'in geleceğini şekillendirmemize yardımcı olun! Hangi özelliklerin geliştirilmesini istediğinizi belirtin.', 'hezarfen-for-woocommerce' ); ?>
+			</p>
+			<p>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen' ) ); ?>" class="button button-primary">
+					<?php esc_html_e( 'Oylamaya Katıl', 'hezarfen-for-woocommerce' ); ?>
+				</a>
+			</p>
+		</div>
+		<script type="text/javascript">
+		jQuery(document).ready(function($) {
+			$(document).on('click', '.hezarfen-roadmap-notice .notice-dismiss', function() {
+				$.post(ajaxurl, {
+					action: 'hezarfen_dismiss_roadmap_notice',
+					nonce: '<?php echo esc_js( wp_create_nonce( 'hezarfen_dismiss_roadmap_notice' ) ); ?>'
+				});
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Handle dismiss roadmap notice AJAX request
+	 *
+	 * @return void
+	 */
+	public function handle_dismiss_roadmap_notice() {
+		check_ajax_referer( 'hezarfen_dismiss_roadmap_notice', 'nonce' );
+		
+		update_option( 'hezarfen_roadmap_notice_dismissed', true );
+		
+		wp_send_json_success();
 	}
 }
 
