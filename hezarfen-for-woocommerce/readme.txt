@@ -1,17 +1,17 @@
 
-=== Hezarfen - Türkiye Kargo Entegrasyonu - WooCommerce Kargo Takip ve Yönetim Eklentisi For Woocommerce ===
+=== Hezarfen - WooCommerce için Kargo Entegrasyonu - Sözleşmeler, Mahalle, İlçe, SMS ===
 Contributors: intenseyazilim, mucahitbal, mskapusuz
 Tags: kargo, sözleşmeler, hepsijet, mng, fatura
 Requires at least: 5.3
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.0
 License: GPL2
-Stable tag: 2.7.6
+Stable tag: 2.7.37
 
-🚀 2 bin site kullanıyor! Kargo takip, ücretsiz Hepsijet Entegrasyonu (1-4 desi: 69,99TL+KDV), Mesafeli Satış Sözleşmesi, NetGSM sipariş ve kargo SMS
+🚀 2 bin site! Kargo takip, ücretsiz Hepsijet Entegrasyonu (1-4 desi: 89,24TL+KDV - Hezarfen Pro gerekmez), Mesafeli Sözleşmeler, NetGSM sipariş SMS
 == Description ==
 
-**Tamamen Ücretsiz!** Intense&Hepsijet İşbirliğiyle; Hezarfen kullanıcılarına Hepsijet 1-4 Desi 69,99TL+KDV - Hezarfen, WooCommerce mağazanızı Türkiye e-ticaret standartlarına uygun hale getiren kapsamlı bir kargo, ödeme ve sözleşme yönetim eklentisidir. Bu WooCommerce kargo entegrasyon eklentisi, 23 farklı kargo firmasıyla çalışabilir, müşterilerinize profesyonel WooCommerce kargo takip deneyimi sunar, Mesafeli Satış Sözleşmesi (MSS) desteği sağlar ve Türkiye'ye özgü mahalle, fatura ve vergi alanlarıyla ödeme ekranınızı Türkiye'ye uyumlu hale getirir.
+**Tamamen Ücretsiz!** Intense&Hepsijet İşbirliğiyle; Hezarfen kullanıcılarına Hepsijet 1-4 Desi 89,24TL+KDV - Hezarfen, WooCommerce mağazanızı Türkiye e-ticaret standartlarına uygun hale getiren kapsamlı bir kargo, ödeme ve sözleşme yönetim eklentisidir. Bu WooCommerce kargo entegrasyon eklentisi, 23 farklı kargo firmasıyla çalışabilir, müşterilerinize profesyonel WooCommerce kargo takip deneyimi sunar, Mesafeli Satış Sözleşmesi (MSS) desteği sağlar ve Türkiye'ye özgü mahalle, fatura ve vergi alanlarıyla ödeme ekranınızı Türkiye'ye uyumlu hale getirir.
 
 = 🚀 2000+ WooCommerce Sitesi tarafından kullanılıyor! =
 
@@ -36,7 +36,7 @@ Stable tag: 2.7.6
 = ⭐ TAMAMEN ÜCRETSİZ =
 
 **🚚 Hepsijet Ücretsiz WooCommerce Kargo Entegrasyonu**
-• 1-4 Desi 69,99TL+KDV - Anlaşma yapmanıza gerek yok, intense.com.tr'den kayıt olun, bakiye yükleyin ve gönderime başlayın. Kargo gönderim için minimum limit yok! İster ayda 1 tane, ister 10000 tane!
+• 1-4 Desi 89,24TL+KDV - (Hezarfen Pro gerekmez!) Anlaşma yapmanıza gerek yok, kargokit.com'dan kayıt olun, bakiye yükleyin ve gönderime başlayın. Kargo gönderim için minimum limit yok! İster ayda 1 tane, ister 10000 tane!
 • Ücretsiz entegrasyon (otomatik kargo takip no girişi, otomatik siparişin kargoya verildi durumuna geçmesi, otomatik siparişin tamamlandı durumuna geçmesi, otomatik müşteriye e-posta bildirimi)
 
 **🚚 Kargo Yönetimi ve WooCommerce Kargo Takip Modülü**
@@ -84,7 +84,7 @@ Hezarfen, KVKK’nın yurt dışına kişisel veri aktarımına ilişkin hüküm
 
 === Harici Servisler (External Services) ===
 
-Bu eklentinin Hepsijet Entegrasyon Özelliği, Intense Yazılım İnternet Teknolojileri Sanayi ve Ticaret Limited Şirketi (“Intense”) tarafından sağlanan harici API servislerine (intense.com.tr) dayanır.  
+Bu eklentinin Hepsijet Entegrasyon Özelliği, Intense Yazılım İnternet Teknolojileri Sanayi ve Ticaret Limited Şirketi (“Intense”) tarafından sağlanan harici API servislerine (kargokit.com) dayanır.  
 Kargo fiyatlarını gösterebilmek için Intense API’larına HTTP istekleri yapılır. Bu istekler sırasında HTTP protokolü gereği teknik bilgiler (ör. alan adı, IP adresi) otomatik olarak iletilebilir; ancak müşteri veya sipariş verileri gönderilmez.  
 
 Mağazanızı bağladıktan sonra, kargo aracılık hizmetlerinin sağlanabilmesi için aşağıdaki veriler işlenebilir ve Intense sunucularına ve/veya anlaşmalı kargo şirketlerine aktarılabilir:  
@@ -94,6 +94,8 @@ Mağazanızı bağladıktan sonra, kargo aracılık hizmetlerinin sağlanabilmes
 Bu veriler, kargo etiketlerinin oluşturulması, fiyatların hesaplanması, gönderilerin anlaşmalı kargo şirketlerine aktarılması ile sınırlı kalmaksızın; ayrıca sistem güvenliği, hata tespiti, log kayıtlarının saklanması ve teknik destek süreçlerinin yürütülmesi amacıyla da kullanılabilmektedir.  
 
 Ayrıca, eğitim videolarının çekilebilmesi için youtube.com RSS servisine bağlantı yapılır ve Hezarfen yol haritası anket gönderimi yapıldığında info@intense.com.tr adresine mail olarak oylamalarınız, alan adınız ve yorumunuz iletilir.
+
+NetGSM aktif edildiğinde NetGSM sunucularına SMS gönderimi için gerekli olan veriler aktarılır.
 
 Detaylı bilgi için [Gizlilik Politikamız](https://intense.com.tr/yasal/gizlilik-politikasi/)
 
@@ -110,6 +112,7 @@ This data is primarily used to generate shipping labels, calculate pricing, and 
 
 Additionally, in order to fetch training videos, a connection is made to the youtube.com RSS service.
 
+When NetGSM is activated, proper data that needs for SMS sending is delivered to the NetGSM.
 
 For more details, please see our [Privacy Policy](https://intense.com.tr/yasal/gizlilik-politikasi/).
 
@@ -134,6 +137,9 @@ For more details, please see our [Privacy Policy](https://intense.com.tr/yasal/g
 5. **MSS Sözleşmeleri**: Mesafeli satış sözleşmesi özelliğini aktifleştirin ve sözleşme şablonlarınızı oluşturun
 
 == Frequently Asked Questions ==
+
+= WooCommerce versiyon uyumluluğu nedir? =
+Hezarfen çalışmak için minimum WooCommerce 6.9.0 sürümüne ihtiyaç duyar, fakat maksimum verim için son sürüm olan WooCommerce 10.2.2 kullanmanız önerilir.
 
 = Eğitim içeriklerine nasıl ulaşabilirim? =
 Eğitim videoları ve rehberler için [Hezarfen YouTube resmi kanalımızı](https://www.youtube.com/@hezarfenforwoocommerce) ziyaret edebilir ve abone olabilirsiniz.
@@ -258,6 +264,112 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 15. Hesabım sayfasında siparişe ait oluşmuş sözleşmelerin gösterilmesi
 
 == Changelog ==
+= 2.7.37 - 2026-01-17 =
+* Şifreleme ayarlarındaki açıklama iyileştirildi.
+* Sipariş düzenleme ekranında indirimli kargo hizmetiyle ilgili servis bilgisi intense.comt.r yerine kargokit.com olarak değiştirildi.
+* Kargokit kargo etiketinde ürün satırlarının üst üste geçmesi problemi giderildi.
+* Kargokit kargo etiketinde çeviri düzeltildi.
+
+= 2.7.36 - 2025-12-26 =
+* Hezarfen ayarlarına "yükselt" butonu eklenmesi
+* Yükselt sayfasında değişiklikler
+* Hezarefn ayarlarında "Sözleşmeler ve anlaşmalar" menüsünün "Sözleşmeler" olarak değiştirilmesi
+
+= 2.7.35 - 2025-12-26 =
+* WP admin sol menüye Hezarfen menüsü eklenmesi
+* Hezafen yükselt sayfası
+
+= 2.7.34 - 2025-12-21 =
+* Hezarfen Pro sipariş ekranındaki tasarımdaki bozulma için düzeltme
+* Anket ekranının tekrar aktif edilmesi
+
+= 2.7.33 - 2025-12-18 =
+* Sözleşmeler e fatura telefonu ve fatura e-posta değişkenleri eklendi.
+
+= 2.7.32 - 2025-12-16 =
+* Kargokit bazı kullanıcıları etkileyen depo seçme sorunu giderildi.
+
+= 2.7.31 - 2025-12-11 =
+* Performans hata giderme (Hepsijet gereksiz warehouse sorgulama yapılmasının engellenmesi)
+
+= 2.7.30 - 2025-12-09 =
+* Kargokit Hepsijet webhook handler iyileştirme
+
+= 2.7.29 - 2025-12-08 =
+* WP admin sipariş düzenleme ekranında yaşanan sipariş düzenleme problemi giderildi.
+
+= 2.7.28 - 2025-12-08 =
+* Samsun Atakum'a Atakent Mah. eklendi.
+
+= 2.7.27 - 2025-12-07 =
+* Kargokit Hepsijet entegrasyonunda çoklu depo özelliği
+
+= 2.7.26 - 2025-12-04 =
+* Özellik: Yeni filtre eklendi: hezarfen_contracts_include_item_meta
+
+= 2.7.25 - 2025-12-03 =
+* Düzeltme: Mahalle helper verilerinin geçerli bir dizi olup olmadığının kontrol edilmesi sağlandı
+* Özellik: Kargokit - Hepsijet için çoklu koli girebilme özelliği
+* Özellik: Kargokit - Hepsijet için barkod oluşturulduktan sonra tahmini fiyat gösterilmesi
+
+= 2.7.24 - 2025-11-30 =
+* Düzeltme: hezarfen_enable_district_neighborhood_fields filtresinin register_district_neighborhood_fields hook'u ile geç çalıştırılması sağlandı
+
+= 2.7.23 - 2025-11-30 =
+* Düzeltme: hezarfen_enable_district_neighborhood_fields filtresi düzeltmesi
+
+= 2.7.22 - 2025-11-30 =
+* Düzeltme: Mahalle özelliği kapalıyken vergi özelliklerinin çalışmasının sağlanması
+* Özellik: hezarfen_enable_district_neighborhood_fields wp filtresi eklendi
+
+= 2.7.21 - 2025-11-18 =
+* Kargo hizmetleri için kargokit.com servisleri kullanılmaya başlandı.
+
+= 2.7.20 - 2025-11-04 =
+* WooCommerce çekirdeğindeki bir hatadan kaynaklanan, Hezarfen mesafeli satış sözleşme modülü kullanılırken 12345 numaralı John Doe test siparişinin oluşması sorunu çözüldü. Kaynak: https://github.com/woocommerce/woocommerce/issues/61790
+* Sipariş düzenleme ekranında Hepsijet arayüzünde yaşanan sorun giderildi.
+
+= 2.7.19 - 2025-11-01 =
+* Sipariş düzenleme ekranında metaboxlarda (indirilebilir ürünler vs.) yaşanan görsel sorun giderildi.
+* Gereksiz error_log çağrıları kaldırıldı.
+
+= 2.7.18 - 2025-10-25 =
+* Hezarfen'de farklı bir ülke seçildiğinde eyaletlerin seçilememesi problemi düzeltildi.
+
+= 2.7.17 - 2025-10-21 =
+* Admin sipariş düzenleme ekranı kargo widgeti iyileştirildi.
+
+= 2.7.16 - 2025-10-21 =
+* NetGSM sms entegrasyonu iyileştirildi.
+
+= 2.7.14 - 2025-10-20 =
+* Hepsijet kargo durumlarının zamanlanmış görevler yerine webhook altyapısı ile güncellenmesi sağlandı.
+
+= 2.7.13 - 2025-10-20 =
+* SMS otomasyonunda {fatura_sehir}, {kargo_sehir}, {billing_city}, {shipping_city} değişkenlerinde il yerine ilçe gösterilmesi problemi giderildi.,
+* Sözleşme değişkenlerine {{fatura_ilce}} ve {{teslimat_ilce}} alanları eklendi.
+* Sözleşme değişkenlerinde {{fatura_sehir}} veya {{teslimat_sehir}} kullanıldığında, il yerine ilçe gösterilmesi problemi giderildi.
+
+= 2.7.12 - 2025-10-20 =
+* Hepsijet etiketinde fotoğraf gösterebilmesi sağlandı.
+
+= 2.7.11 - 2025-10-08 =
+* İlçe ve mahalle alanının isteğe bağlı kapatılabilmesi sağlandı.
+
+= 2.7.10 - 2025-10-08 =
+* SMS otomasyonunun aktif/deaktif edilmesini sağlayan butonda yaşanan sorun giderildi.
+* HepsiJet etiketinde yer alan ürün bilgilerinin isteğe bağlı olarak gizlenmesi sağlandı.
+* Kargoya verildi e-posta içeriğinde yer alan takip butonunun arkaplan ve yazı renginin düzenlenebilmesi için WP filter (hezarfen_email_tracking_link_text_color, hezarfen_email_tracking_link_background_color) eklendi.
+
+= 2.7.8 - 2025-10-06 =
+* Kargoya verildi e-postasında tekrarlanan yazı problemi giderildi.
+* WooCommerce için minimum 6.9.0 gereksinim tanımlaması yapıldı.
+* Hezarfen pasif edilmeden önce "kargoya verildi" durumundaki siparişlerin "hazırlanıyor "durumuna aktarılabilmesi için bir özellik eklendi.
+* PHP uyarısı giderildi.
+
+= 2.7.7 - 2025-10-02 =
+* Minimum WooCommerce versiyon gereksinimi 6.9.0 olarak tanımlandı.
+
 = 2.7.6 - 2025-10-01 =
 * PHP warning giderildi.
 
@@ -271,7 +383,7 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 = 2.7.3 - 2025-10-01 =
 * Tekrar yol haritası için oylama yapılmasına izin verilmesi problemi giderildi.
 
-= 2..7.2 - 2025-10-01 =
+= 2.7.2 - 2025-10-01 =
 * Yol haritası için admin uyarısı
 
 = 2.7.1 - 2025-10-01 =

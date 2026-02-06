@@ -49,6 +49,16 @@ class Settings {
 		// Add Hepsijet integration settings
 		add_filter( 'woocommerce_get_sections_' . self::HEZARFEN_WC_SETTINGS_ID, array( __CLASS__, 'add_hepsijet_section' ) );
 		add_filter( 'woocommerce_get_settings_' . self::HEZARFEN_WC_SETTINGS_ID, array( __CLASS__, 'add_hepsijet_settings' ), 10, 2 );
+		add_action( 'woocommerce_settings_save_hezarfen', array( __CLASS__, 'save_hepsijet_settings' ), 5 ); // Run early with priority 5
+		
+		// Decrypt webhook secret for display
+		add_filter( 'pre_option_hez_ordermigo_webhook_secret', array( __CLASS__, 'decrypt_webhook_secret_for_display' ), 10 );
+		
+		// AJAX handler for clearing warehouses cache
+		add_action( 'wp_ajax_hezarfen_clear_warehouses_cache', array( __CLASS__, 'ajax_clear_warehouses_cache' ) );
+		
+		// Custom field type for cache clear button
+		add_action( 'woocommerce_admin_field_hepsijet_cache_button', array( __CLASS__, 'render_cache_clear_button' ) );
 	}
 
 	/**
@@ -328,7 +338,207 @@ class Settings {
 				'type' => 'sectionend',
 				'id' => 'hezarfen_hepsijet_relay_settings'
 			),
+			array(
+				'type'  => 'title',
+				'title' => __( 'Cache Management', 'hezarfen-for-woocommerce' ),
+				'desc'  => __( 'Warehouse data is cached for 3 hours to improve performance. Use the button below to refresh immediately after adding new stores.', 'hezarfen-for-woocommerce' ),
+			),
+			array(
+				'type' => 'hepsijet_cache_button',
+				'id' => 'hezarfen_hepsijet_clear_cache',
+			),
+			array(
+				'type' => 'sectionend',
+				'id' => 'hezarfen_hepsijet_cache_management'
+			),
+			array(
+				'type'  => 'title',
+				'title' => __( 'Label Settings', 'hezarfen-for-woocommerce' ),
+			),
+			array(
+				'title' => __( 'Show order details on label', 'hezarfen-for-woocommerce' ),
+				'type' => 'checkbox',
+				'id' => 'hezarfen_hepsijet_show_order_details_on_label',
+				'default' => 'yes',
+				'desc' => __( 'Display order details on the PDF label. If unchecked, only Hepsijet Label will be shown.', 'hezarfen-for-woocommerce' )
+			),
+			array(
+				'type' => 'sectionend',
+				'id' => 'hezarfen_hepsijet_label_settings'
+			),
+			array(
+				'type'  => 'title',
+				'title' => __( 'Advanced Settings', 'hezarfen-for-woocommerce' ),
+				'desc'  => '<div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 12px; margin: 10px 0;"><strong>⚠️ ' . __( 'Warning:', 'hezarfen-for-woocommerce' ) . '</strong> ' . __( 'Do not modify these settings unless you know what you are doing. These settings are automatically configured.', 'hezarfen-for-woocommerce' ) . '</div>',
+			),
+			array(
+				'title' => __( 'Webhook Secret', 'hezarfen-for-woocommerce' ),
+				'type' => 'text',
+				'id' => 'hez_ordermigo_webhook_secret',
+				'default' => '',
+				'desc' => __( 'This secret is used to verify webhook notifications from OrderMigo. It is automatically generated when you create your first shipment. Do not edit this unless instructed by support.', 'hezarfen-for-woocommerce' ),
+				'autoload' => false
+			),
+			array(
+				'type' => 'sectionend',
+				'id' => 'hezarfen_hepsijet_advanced_settings'
+			),
 		);
+	}
+
+	/**
+	 * Check if OpenSSL extension is available
+	 * 
+	 * @return bool True if OpenSSL is available
+	 */
+	private static function is_openssl_available() {
+		return extension_loaded( 'openssl' ) && function_exists( 'openssl_encrypt' );
+	}
+
+	/**
+	 * Encrypt webhook secret
+	 * 
+	 * @param string $value Value to encrypt
+	 * @return string Encrypted value
+	 */
+	private static function encrypt_webhook_secret( $value ) {
+		if ( empty( $value ) ) {
+			return '';
+		}
+
+		// Check if OpenSSL is available
+		if ( ! self::is_openssl_available() ) {
+			return base64_encode( $value );
+		}
+
+		// Use WordPress auth keys for encryption
+		$key = AUTH_KEY . SECURE_AUTH_KEY;
+		$salt = AUTH_SALT . SECURE_AUTH_SALT;
+		
+		// Generate encryption key
+		$encryption_key = hash( 'sha256', $key );
+		$iv_length = openssl_cipher_iv_length( 'aes-256-cbc' );
+		$iv = substr( hash( 'sha256', $salt ), 0, $iv_length );
+		
+		// Encrypt the value
+		$encrypted = openssl_encrypt( $value, 'aes-256-cbc', $encryption_key, 0, $iv );
+		
+		if ( $encrypted === false ) {
+			return base64_encode( $value );
+		}
+		
+		return base64_encode( $encrypted );
+	}
+
+	/**
+	 * Decrypt webhook secret
+	 * 
+	 * @param string $encrypted_value Encrypted value
+	 * @return string Decrypted value
+	 */
+	private static function decrypt_webhook_secret( $encrypted_value ) {
+		if ( empty( $encrypted_value ) ) {
+			return '';
+		}
+
+		$decoded = base64_decode( $encrypted_value );
+		
+		if ( $decoded === false ) {
+			return '';
+		}
+
+		// Check if OpenSSL is available
+		if ( ! self::is_openssl_available() ) {
+			// Fallback: Value was stored with base64 only
+			return $decoded;
+		}
+
+		// Use WordPress auth keys for decryption
+		$key = AUTH_KEY . SECURE_AUTH_KEY;
+		$salt = AUTH_SALT . SECURE_AUTH_SALT;
+		
+		// Generate decryption key
+		$encryption_key = hash( 'sha256', $key );
+		$iv_length = openssl_cipher_iv_length( 'aes-256-cbc' );
+		$iv = substr( hash( 'sha256', $salt ), 0, $iv_length );
+		
+		// Decrypt the value
+		$decrypted = openssl_decrypt( $decoded, 'aes-256-cbc', $encryption_key, 0, $iv );
+		
+		// If decryption fails, try to return the base64 decoded value (fallback scenario)
+		if ( $decrypted === false ) {
+			return $decoded;
+		}
+		
+		return $decrypted;
+	}
+
+	/**
+	 * Decrypt webhook secret for display in settings
+	 * 
+	 * @param mixed $value The option value
+	 * @return string Decrypted value
+	 */
+	public static function decrypt_webhook_secret_for_display( $value ) {
+		// Don't decrypt during save operations
+		if ( isset( $_POST['save'] ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			return $value;
+		}
+
+		// Only decrypt when viewing settings page (not saving)
+		global $current_section;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( is_admin() && isset( $_GET['page'] ) && 'wc-settings' === sanitize_text_field( wp_unslash( $_GET['page'] ) ) && 'hepsijet_integration' === $current_section ) {
+			// Get the raw encrypted value from database
+			global $wpdb;
+			$encrypted = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", 'hez_ordermigo_webhook_secret' ) );
+			if ( $encrypted ) {
+				return self::decrypt_webhook_secret( $encrypted );
+			}
+		}
+		return $value;
+	}
+
+	/**
+	 * Save Hepsijet settings with encryption for webhook secret
+	 * 
+	 * @return void
+	 */
+	public static function save_hepsijet_settings() {
+		global $current_section;
+
+		if ( 'hepsijet_integration' !== $current_section ) {
+			return;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		if ( ! isset( $_POST['save'] ) ) {
+			return;
+		}
+
+		if ( isset( $_POST['hez_ordermigo_webhook_secret'] ) ) {
+			$webhook_secret = sanitize_text_field( wp_unslash( $_POST['hez_ordermigo_webhook_secret'] ) );
+			
+			// Get current value to see if it changed
+			$current_encrypted = get_option( 'hez_ordermigo_webhook_secret', '' );
+			$current_decrypted = self::decrypt_webhook_secret( $current_encrypted );
+			
+			// Only save if the value actually changed
+			if ( $webhook_secret !== $current_decrypted ) {
+				if ( ! empty( $webhook_secret ) ) {
+					// Encrypt and save with autoload disabled
+					$encrypted = self::encrypt_webhook_secret( $webhook_secret );
+					$result = update_option( 'hez_ordermigo_webhook_secret', $encrypted, false );
+				} else {
+					// Delete if empty
+					delete_option( 'hez_ordermigo_webhook_secret' );
+				}
+			}
+			
+			// Prevent WooCommerce from processing this field normally
+			unset( $_POST['hez_ordermigo_webhook_secret'] );
+		}
+		// phpcs:enable
 	}
 
 	/**
@@ -381,6 +591,127 @@ class Settings {
 				'hezarfen_mst_backend',
 				$object_props,
 			);
+		}
+	}
+
+	/**
+	 * Render cache clear button
+	 * 
+	 * @param array $value Field settings
+	 * @return void
+	 */
+	public static function render_cache_clear_button( $value ) {
+		?>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label><?php esc_html_e( 'Warehouse List Cache', 'hezarfen-for-woocommerce' ); ?></label>
+			</th>
+			<td class="forminp forminp-button">
+				<button type="button" id="clear-hepsijet-warehouses-cache" class="button button-secondary">
+					<span class="dashicons dashicons-update" style="margin-top: 3px;"></span>
+					<?php esc_html_e( 'Refresh Warehouse List', 'hezarfen-for-woocommerce' ); ?>
+				</button>
+				<p class="description">
+					<?php esc_html_e( 'Click to immediately refresh the warehouse list. Use this after adding new stores on intense.com.tr.', 'hezarfen-for-woocommerce' ); ?>
+				</p>
+				<div id="cache-clear-status" style="margin-top: 10px; display: none;"></div>
+				
+				<script type="text/javascript">
+				jQuery(document).ready(function($) {
+					$('#clear-hepsijet-warehouses-cache').on('click', function(e) {
+						e.preventDefault();
+						
+						var $button = $(this);
+						var $status = $('#cache-clear-status');
+						var originalText = $button.html();
+						
+						$button.prop('disabled', true).html('<span class="dashicons dashicons-update spin" style="margin-top: 3px;"></span> <?php esc_html_e( 'Refreshing...', 'hezarfen-for-woocommerce' ); ?>');
+						
+						$.ajax({
+							url: ajaxurl,
+							type: 'POST',
+							data: {
+								action: 'hezarfen_clear_warehouses_cache',
+								_wpnonce: '<?php echo esc_js( wp_create_nonce( 'clear_warehouses_cache' ) ); ?>'
+							},
+							success: function(response) {
+								if (response.success) {
+									$status.html('<div class="notice notice-success inline" style="padding: 8px 12px; margin: 0;"><p style="margin: 0;">' +
+										'<span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span> ' +
+										response.data.message +
+									'</p></div>').fadeIn();
+									
+									setTimeout(function() {
+										$status.fadeOut();
+									}, 5000);
+								} else {
+									$status.html('<div class="notice notice-error inline" style="padding: 8px 12px; margin: 0;"><p style="margin: 0;">' +
+										'<span class="dashicons dashicons-warning"></span> ' +
+										(response.data.message || '<?php esc_html_e( 'An error occurred', 'hezarfen-for-woocommerce' ); ?>') +
+									'</p></div>').fadeIn();
+								}
+							},
+							error: function() {
+								$status.html('<div class="notice notice-error inline" style="padding: 8px 12px; margin: 0;"><p style="margin: 0;">' +
+									'<span class="dashicons dashicons-warning"></span> ' +
+									'<?php esc_html_e( 'Connection error', 'hezarfen-for-woocommerce' ); ?>' +
+								'</p></div>').fadeIn();
+							},
+							complete: function() {
+								$button.prop('disabled', false).html(originalText);
+							}
+						});
+					});
+				});
+				</script>
+				
+				<style>
+				.dashicons.spin {
+					animation: rotation 1s infinite linear;
+				}
+				@keyframes rotation {
+					from { transform: rotate(0deg); }
+					to { transform: rotate(359deg); }
+				}
+				</style>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * AJAX handler to clear warehouses cache
+	 * 
+	 * @return void
+	 */
+	public static function ajax_clear_warehouses_cache() {
+		check_ajax_referer( 'clear_warehouses_cache', '_wpnonce' );
+		
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( array(
+				'message' => __( 'You do not have permission to perform this action.', 'hezarfen-for-woocommerce' )
+			) );
+		}
+		
+		try {
+			// Clear the warehouses cache
+			$cleared = delete_transient( 'hepsijet_warehouses_cache' );
+			
+			// Also clear pricing cache for good measure
+			$integration = new Courier_Hepsijet_Integration();
+			$integration->clear_pricing_cache();
+			
+			wp_send_json_success( array(
+				'message' => __( 'Warehouse list cache cleared successfully! New warehouses will appear on next order page load.', 'hezarfen-for-woocommerce' ),
+				'cleared' => $cleared
+			) );
+		} catch ( \Exception $e ) {
+			wp_send_json_error( array(
+				'message' => sprintf( 
+					__( 'Error clearing cache: %s', 'hezarfen-for-woocommerce' ),
+					$e->getMessage()
+				)
+			) );
 		}
 	}
 }

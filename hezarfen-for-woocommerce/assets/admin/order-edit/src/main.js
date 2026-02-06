@@ -131,9 +131,6 @@ jQuery(document).ready(($)=>{
         hepsijetButton.removeClass('hidden');
       }
       
-      // Reset conditional fields when showing Hepsijet fields
-      $('#hepsijet-delivery-slot-container').addClass('hidden');
-      $('#hepsijet-return-date-container').addClass('hidden');
     } else if (selectedCourier) {
       // Show standard tracking fields for any other selected courier
       standardFields.removeClass('hidden');
@@ -234,21 +231,44 @@ jQuery(document).ready(($)=>{
   });
 
   // Handle delivery type selection
-  metabox_wrapper.find('#hepsijet-delivery-type').on('change', function() {
+  $(document).on('change', 'input[name="hepsijet-delivery-type"]', function() {
     const selectedType = $(this).val();
+    console.log('Delivery type changed:', selectedType);
+
     const deliverySlotContainer = $('#hepsijet-delivery-slot-container');
-    const returnDateContainer = $('#hepsijet-return-date-container');
-    
-    // Hide all conditional containers first
-    deliverySlotContainer.addClass('hidden');
-    returnDateContainer.addClass('hidden');
-    
+    const returnFieldsContainer = $('#hepsijet-return-fields-container');
+    const warehouseContainer = $('#hepsijet-warehouse-container');
+    const addPackageButton = $('#add-hepsijet-package');
+
+    console.log('Return fields container found:', returnFieldsContainer.length);
+
+    // Hide all conditional containers first (use jQuery hide/show for reliability)
+    deliverySlotContainer.hide();
+    returnFieldsContainer.hide();
+
     // Show relevant container based on selection
     if (selectedType === 'sameday' || selectedType === 'nextday') {
-      deliverySlotContainer.removeClass('hidden');
+      deliverySlotContainer.show();
+      // Show warehouse and allow multiple packages for shipment types
+      warehouseContainer.show();
+      addPackageButton.show();
     } else if (selectedType === 'returned') {
-      returnDateContainer.removeClass('hidden');
-      loadReturnDates();
+      console.log('Showing return fields container');
+      returnFieldsContainer.show();
+      // Don't auto-load dates - wait for user to click the button
+      // Hide warehouse selection for returns
+      warehouseContainer.hide();
+      // Hide add package button and keep only one package for returns
+      console.log('Add package button found:', addPackageButton.length);
+      addPackageButton.hide();
+      addPackageButton.css('display', 'none');
+      // Remove extra packages, keep only the first one
+      const packagesContainer = $('#hepsijet-packages-container');
+      packagesContainer.find('.hepsijet-package-item:not(:first)').remove();
+    } else {
+      // Standard shipment - show warehouse and allow multiple packages
+      warehouseContainer.show();
+      addPackageButton.show();
     }
   });
   
@@ -308,70 +328,86 @@ jQuery(document).ready(($)=>{
   // Load available return dates from API
   function loadReturnDates() {
     const returnDateSelect = $('#hepsijet-return-date');
-        returnDateSelect.html(`<option value="">${hezarfen_mst_backend.loading_available_dates}</option>`);
-    
-    // Get order shipping city and district
-    const orderId = $('#create-hepsijet-shipment').data('order_id');
-    
-    // Get shipping city and district from WooCommerce order edit screen shipping metabox
-    const shippingDistrict = $('#_shipping_city').val() || 'Istanbul';
-    
-    // Get human-readable district name from the shipping state field display
-    let shippingCity = '';
-    const shippingStateField = $('#_shipping_state');
-    if (shippingStateField.length) {
-      // Try to get the selected option text (human-readable name)
-      const selectedOption = shippingStateField.find('option:selected');
-      if (selectedOption.length && selectedOption.text()) {
-        shippingCity = selectedOption.text();
-      } else {
-        // Fallback: try to get from the field's display value
-        shippingCity = shippingStateField.val() ;
-      }
+    returnDateSelect.html(`<option value="">${hezarfen_mst_backend.loading_available_dates}</option>`);
+
+    // Get city and district from the return address form fields
+    const returnCity = $('#hepsijet-return-city').val() || '';
+    const returnDistrict = $('#hepsijet-return-district').val() || '';
+
+    // Validate that city and district are filled
+    if (!returnCity || !returnDistrict) {
+      showNotification('Lütfen önce şehir ve ilçe bilgilerini doldurun.', 'warning');
+      returnDateSelect.html('<option value="">Şehir ve ilçe bilgisi gerekli</option>');
+      return;
     }
-    
+
     const startDate = new Date().toISOString().split('T')[0]; // Today
     const endDate = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 10 days later
-    
+
     const data = {
       action: 'hezarfen_mst_get_return_dates',
       _wpnonce: hezarfen_mst_backend.get_return_dates_nonce,
       start_date: startDate,
       end_date: endDate,
-      city: shippingCity,
-      district: shippingDistrict
+      city: returnCity,
+      district: returnDistrict
     };
     
     $.post(ajaxurl, data, function(response) {
       console.log('Return dates API response:', response);
-      
+
       if (response.success && response.data) {
         console.log('Response data:', response.data);
-        
-        if (response.data.dates && response.data.dates.length > 0) {
-          let options = '<option value="">Select return date</option>';
-          response.data.dates.forEach(function(date) {
-            options += `<option value="${date}">${date}</option>`;
+
+        /*
+         * Backend AJAX response format:
+         * {
+         *   "success": true,
+         *   "data": {
+         *     "dates": {
+         *       "SARIYER": ["2025-12-23", "2025-12-24"],
+         *       "ZEKERİYAKÖY": ["2025-12-23", "2025-12-24"]
+         *     }
+         *   }
+         * }
+         * or when no dates: { "success": true, "data": { "dates": [], "message": "..." } }
+         */
+        const datesData = response.data.dates;
+
+        // Check if we have a message (no dates available case)
+        if (response.data.message) {
+          showNotification(response.data.message, 'info');
+          returnDateSelect.html('<option value="">Müsait tarih bulunamadı</option>');
+          return;
+        }
+
+        // Check if datesData is an object with regions as keys
+        if (datesData && typeof datesData === 'object' && !Array.isArray(datesData)) {
+          let options = '<option value="">Randevu tarihi seçiniz</option>';
+          let hasAnyDates = false;
+
+          Object.keys(datesData).forEach(function(region) {
+            if (Array.isArray(datesData[region]) && datesData[region].length > 0) {
+              hasAnyDates = true;
+              datesData[region].forEach(function(date) {
+                // Format date from YYYY-MM-DD to DD.MM.YYYY
+                const [year, month, day] = date.split('-');
+                const formattedDate = `${day}.${month}.${year}`;
+                options += `<option value="${date}">${formattedDate} - ${region}</option>`;
+              });
+            }
           });
-          returnDateSelect.html(options);
-          
-          // Show success message if available
-          if (response.data.message) {
-            console.log('Return dates loaded:', response.data.message);
+
+          if (hasAnyDates) {
+            returnDateSelect.html(options);
+          } else {
+            showNotification('Müsait tarih bulunamadı', 'info');
+            returnDateSelect.html('<option value="">Müsait tarih bulunamadı</option>');
           }
         } else {
-          // No dates available, show the message from API
-          const message = response.data.message || 'No available return dates';
-          console.log('Setting message in dropdown:', message);
-          
-          // Show nice notification
-          showNotification(message, 'info');
-          
-          // Set dropdown to show no dates available
-          returnDateSelect.html('<option value="">No available return dates</option>');
-          
-          // Log the message for debugging
-          console.log('No return dates available:', message);
+          // No dates available or unexpected format
+          showNotification('Müsait tarih bulunamadı', 'info');
+          returnDateSelect.html('<option value="">Müsait tarih bulunamadı</option>');
         }
       } else {
         console.log('Response not successful or missing data:', response);
@@ -380,8 +416,37 @@ jQuery(document).ready(($)=>{
     }).fail(function(xhr, status, error) {
       console.error('Failed to load return dates:', {xhr, status, error});
       returnDateSelect.html(`<option value="">${hezarfen_mst_backend.error_loading_dates}</option>`);
+      // Hide loading state and show error
+      fetchReturnDatesBtn.prop('disabled', false).html(originalBtnText);
     });
   }
+
+  // Fetch Return Dates Button Click Handler
+  const fetchReturnDatesBtn = $('#hepsijet-fetch-return-dates');
+  let originalBtnText = fetchReturnDatesBtn.html();
+
+  fetchReturnDatesBtn.on('click', function() {
+    const btn = $(this);
+    // Show loading state
+    btn.prop('disabled', true).html(`
+      <svg class="w-4 h-4 inline-block mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Tarihler yükleniyor...
+    `);
+
+    // Load dates and show the date container after success
+    loadReturnDates();
+
+    // Show the date container
+    $('#hepsijet-return-date-container').removeClass('hidden');
+
+    // Reset button after a short delay (the AJAX will complete)
+    setTimeout(() => {
+      btn.prop('disabled', false).html(originalBtnText);
+    }, 2000);
+  });
 
   const addToTrackList = metabox_wrapper.find('#add-to-tracking-list');
 
@@ -407,21 +472,156 @@ jQuery(document).ready(($)=>{
     });
   });
 
+  // Initialize Hepsijet packages system
+  function initHepsijetPackages() {
+    const $container = $('#hepsijet-packages-container');
+    
+    // Clear container
+    $container.empty();
+    
+    // Add initial package
+    addHepsijetPackage();
+  }
+
+  // Add a new package input
+  function addHepsijetPackage() {
+    const $container = $('#hepsijet-packages-container');
+    const packageIndex = $container.find('.hepsijet-package-item').length;
+    
+    const packageHtml = `
+      <div class="hepsijet-package-item flex items-center gap-2 p-2 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600">
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[60px]">Koli ${packageIndex + 1}:</span>
+        <div class="flex-1">
+          <input type="number" 
+                 name="hezarfen_hepsijet_package_desi[]"
+                 class="hepsijet-package-desi shadow-sm bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:text-white" 
+                 step="0.01" 
+                 min="0.01" 
+                 placeholder="Desi" />
+        </div>
+        <button type="button" class="remove-hepsijet-package inline-flex items-center p-2 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30" ${packageIndex === 0 ? 'style="visibility: hidden;"' : ''}>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    `;
+    
+    $container.append(packageHtml);
+    updatePackageLabels();
+  }
+
+  // Update package labels after add/remove
+  function updatePackageLabels() {
+    const $container = $('#hepsijet-packages-container');
+    $container.find('.hepsijet-package-item').each(function(index) {
+      $(this).find('span').first().text('Koli ' + (index + 1) + ':');
+      
+      // Hide remove button for first package, show for others
+      if (index === 0) {
+        $(this).find('.remove-hepsijet-package').css('visibility', 'hidden');
+      } else {
+        $(this).find('.remove-hepsijet-package').css('visibility', 'visible');
+      }
+    });
+  }
+
+  // Add package button handler
+  $(document).on('click', '#add-hepsijet-package', function(e) {
+    e.preventDefault();
+    addHepsijetPackage();
+  });
+
+  // Remove package button handler
+  $(document).on('click', '.remove-hepsijet-package', function(e) {
+    e.preventDefault();
+    const $container = $('#hepsijet-packages-container');
+    
+    // Don't allow removing the last package
+    if ($container.find('.hepsijet-package-item').length > 1) {
+      $(this).closest('.hepsijet-package-item').remove();
+      updatePackageLabels();
+    }
+  });
+
+  // Initialize packages when the modal is shown
+  initHepsijetPackages();
+
+  // Copy delivery number to clipboard
+  $(document).on('click', '.copy-delivery-no', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const deliveryNo = $(this).attr('data-delivery_no');
+    const $btn = $(this);
+    const originalHtml = $btn.html();
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(deliveryNo).then(() => {
+        // Show brief feedback
+        $btn.html('<svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>');
+        setTimeout(() => {
+          $btn.html(originalHtml);
+        }, 1500);
+      });
+    } else {
+      // Fallback for older browsers or non-secure contexts
+      const textArea = document.createElement('textarea');
+      textArea.value = deliveryNo;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      // Show brief feedback
+      $btn.html('<svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>');
+      setTimeout(() => {
+        $btn.html(originalHtml);
+      }, 1500);
+    }
+  });
+
+  // Warehouses are now loaded server-side in PHP template
+  // No need to load via AJAX - better performance and no race conditions
+  // loadHepsijetWarehouses(); // DISABLED
+
   // Handle Hepsijet shipment creation
   const createHepsijetShipment = metabox_wrapper.find('#create-hepsijet-shipment');
 
   createHepsijetShipment.on('click', function() {
     const $button = $(this);
     const originalText = $button.text();
-    const packageCount = $('#hepsijet-package-count').val();
-    const desi = $('#hepsijet-desi').val();
-    const deliveryType = $('#hepsijet-delivery-type').val();
+    const deliveryType = $('input[name="hepsijet-delivery-type"]:checked').val();
     const deliverySlot = $('#hepsijet-delivery-slot').val();
     const returnDate = $('#hepsijet-return-date').val();
+    const warehouseId = $('#hepsijet-warehouse').val();
+
+    // Validate warehouse selection (only for non-return types)
+    if (deliveryType !== 'returned' && !warehouseId) {
+      alert('Lütfen depo seçiniz.');
+      return;
+    }
+
+    // Collect packages data
+    const packages = [];
+    let hasError = false;
+
+    $('#hepsijet-packages-container .hepsijet-package-item').each(function() {
+      const desi = $(this).find('.hepsijet-package-desi').val();
+
+      if (!desi || parseFloat(desi) < 0.01) {
+        hasError = true;
+        return false; // Break loop
+      }
+
+      packages.push({
+        desi: parseFloat(desi)
+      });
+    });
 
     // Validate inputs
-    if (!packageCount || !desi || packageCount < 1 || desi < 0.01) {
-      alert('Lütfen koli adedi ve desi değerlerini doğru giriniz.');
+    if (hasError || packages.length === 0) {
+      alert('Lütfen tüm koliler için desi değerlerini doğru giriniz.');
       return;
     }
 
@@ -431,9 +631,26 @@ jQuery(document).ready(($)=>{
       return;
     }
 
-    if (deliveryType === 'returned' && !returnDate) {
-      alert('Lütfen iade tarihini seçiniz.');
-      return;
+    // Validate return specific fields
+    if (deliveryType === 'returned') {
+      if (!returnDate) {
+        alert('Lütfen iade tarihini seçiniz.');
+        return;
+      }
+
+      // Validate return address fields
+      const returnFirstName = $('#hepsijet-return-first-name').val().trim();
+      const returnLastName = $('#hepsijet-return-last-name').val().trim();
+      const returnCity = $('#hepsijet-return-city').val().trim();
+      const returnDistrict = $('#hepsijet-return-district').val().trim();
+      const returnNeighborhood = $('#hepsijet-return-neighborhood').val().trim();
+      const returnAddress = $('#hepsijet-return-address').val().trim();
+      const returnPhone = $('#hepsijet-return-phone').val().trim();
+
+      if (!returnFirstName || !returnLastName || !returnCity || !returnDistrict || !returnNeighborhood || !returnAddress || !returnPhone) {
+        alert('Lütfen tüm iade adres bilgilerini doldurunuz.');
+        return;
+      }
     }
 
     // Disable button and show loading state
@@ -443,19 +660,54 @@ jQuery(document).ready(($)=>{
       action: hezarfen_mst_backend.create_hepsijet_shipment_action,
       _wpnonce: hezarfen_mst_backend.create_hepsijet_shipment_nonce,
       order_id: $(this).data('order_id'),
-      package_count: packageCount,
-      desi: desi,
+      packages: JSON.stringify(packages),
       type: deliveryType,
       delivery_slot: deliverySlot || '',
-      delivery_date: returnDate || ''
+      delivery_date: returnDate || '',
+      warehouse_id: warehouseId || ''
     };
+
+    // Add return address data if return type
+    if (deliveryType === 'returned') {
+      data.return_address = JSON.stringify({
+        first_name: $('#hepsijet-return-first-name').val().trim(),
+        last_name: $('#hepsijet-return-last-name').val().trim(),
+        city: $('#hepsijet-return-city').val().trim(),
+        district: $('#hepsijet-return-district').val().trim(),
+        neighborhood: $('#hepsijet-return-neighborhood').val().trim(),
+        address: $('#hepsijet-return-address').val().trim(),
+        phone: $('#hepsijet-return-phone').val().trim()
+      });
+    }
 
     $.post(
       ajaxurl,
       data,
       function (response) {
         if (response.success) {
-          location.reload();
+          // Debug: Log the response to console
+          console.log('Hepsijet Response:', response);
+          
+          // Check multiple possible paths for cost_info
+          let costInfo = null;
+          
+          if (response.data && response.data.response_data && response.data.response_data.cost_info) {
+            costInfo = response.data.response_data.cost_info;
+          } else if (response.data && response.data.cost_info) {
+            costInfo = response.data.cost_info;
+          } else if (response.cost_info) {
+            costInfo = response.cost_info;
+          }
+          
+          console.log('Cost Info:', costInfo);
+          
+          if (costInfo) {
+            showShipmentCostModal(costInfo);
+          } else {
+            // No cost info, just reload
+            console.log('No cost_info found, reloading page');
+            location.reload();
+          }
         } else {
           alert('Hata: ' + (response.data || 'Bilinmeyen hata'));
         }
@@ -468,6 +720,35 @@ jQuery(document).ready(($)=>{
       $button.prop('disabled', false).text(originalText);
     });
   });
+
+  // Show shipment cost alert
+  function showShipmentCostModal(costInfo) {
+    const packages = costInfo.packages || [];
+    const summary = costInfo.summary || {};
+    
+    // Build alert message
+    let message = '✓ Barkod Başarıyla Oluşturuldu!\n\n';
+    message += '━━━━━━━━━━━━━━━━━━━━━━\n';
+    message += 'Toplam Maliyet (Tahmini):\n';
+    message += parseFloat(summary.total_cost_with_vat).toFixed(2) + ' ' + (summary.currency || 'TRY');
+    
+    if (summary.vat_rate) {
+      message += ' (KDV Dahil %' + (summary.vat_rate * 100).toFixed(0) + ')';
+    }
+    
+    message += '\n━━━━━━━━━━━━━━━━━━━━━━\n\n';
+    message += 'Koli Detayları:\n\n';
+    
+    packages.forEach((pkg, index) => {
+      message += 'Koli ' + (pkg.package_number || (index + 1)) + ': ';
+      message += parseFloat(pkg.desi).toFixed(2) + ' desi → ';
+      message += parseFloat(pkg.cost_with_vat).toFixed(2) + ' ' + (summary.currency || 'TRY');
+      message += '\n';
+    });
+    
+    alert(message);
+    location.reload();
+  }
 
   // Handle Hepsijet check details button (using event delegation)
   $(document).off('click', '.check-hepsijet-details').on('click', '.check-hepsijet-details', function(e) {
@@ -1200,6 +1481,97 @@ jQuery(document).ready(($)=>{
       balanceElement.text(hezarfen_mst_backend.connection_error);
       console.error('Balance AJAX error:', error);
     });
+  }
+
+  /**
+   * Load HepsiJet warehouses with 3-hour caching
+   */
+  function loadHepsijetWarehouses() {
+    const $warehouseSelect = $('#hepsijet-warehouse');
+    
+    if (!$warehouseSelect.length) {
+      return; // Element not found
+    }
+
+    // Check cache first (3 hours = 10800 seconds)
+    const cacheKey = 'hepsijet_warehouses';
+    const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+    const cached = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(cacheKey + '_time');
+    
+    if (cached && cacheTime) {
+      const age = Date.now() - parseInt(cacheTime);
+      if (age < cacheExpiry) {
+        // Use cached data
+        try {
+          const warehouses = JSON.parse(cached);
+          populateWarehouseDropdown(warehouses);
+          return;
+        } catch (e) {
+          // Invalid cache, continue to fetch
+        }
+      }
+    }
+
+    // Fetch from API
+    const data = {
+      action: 'hepsijet_get_warehouses',
+      _wpnonce: hezarfen_mst_backend.create_hepsijet_shipment_nonce
+    };
+
+    $.post(hezarfen_mst_backend.ajax_url, data, function(response) {
+      if (response.success && response.data && response.data.warehouses) {
+        const warehouses = response.data.warehouses;
+        
+        // Cache the response
+        localStorage.setItem(cacheKey, JSON.stringify(warehouses));
+        localStorage.setItem(cacheKey + '_time', Date.now().toString());
+        
+        // Populate dropdown
+        populateWarehouseDropdown(warehouses);
+      } else {
+        $warehouseSelect.html('<option value="">Adres yüklenemedi</option>');
+      }
+    }).fail(function() {
+      $warehouseSelect.html('<option value="">Adres yüklenemedi</option>');
+    });
+  }
+
+  /**
+   * Populate warehouse dropdown
+   */
+  function populateWarehouseDropdown(warehouses) {
+    const $warehouseSelect = $('#hepsijet-warehouse');
+    const $container = $('#hepsijet-warehouse-container');
+    
+    $warehouseSelect.empty();
+    
+    if (!warehouses || warehouses.length === 0) {
+      $warehouseSelect.html('<option value="">Kayıtlı adres bulunamadı</option>');
+      return;
+    }
+    
+    // If only one warehouse (merchant only), select it by default and hide dropdown
+    if (warehouses.length === 1) {
+      $warehouseSelect.append(
+        $('<option></option>').val(warehouses[0].id).text(warehouses[0].label).attr('selected', 'selected')
+      );
+      $container.hide(); // Hide the entire container
+    } else {
+      // Multiple warehouses - show dropdown
+      $warehouseSelect.append('<option value="">-- Depo Seçiniz --</option>');
+      
+      $.each(warehouses, function(index, warehouse) {
+        $warehouseSelect.append(
+          $('<option></option>')
+            .val(warehouse.id)
+            .text(warehouse.label)
+            .data('warehouse', warehouse)
+        );
+      });
+      
+      $container.show(); // Make sure container is visible
+    }
   }
 
 });

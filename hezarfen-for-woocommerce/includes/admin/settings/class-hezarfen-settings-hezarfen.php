@@ -42,8 +42,8 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 	 */
 	protected function get_own_sections() {
 		// Build base sections
-		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '<=' ) ) {
-			// Version <= 2.7.30: Roadmap is default, Training is separate
+		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.40', '<=' ) ) {
+			// Version <= 2.7.40: Roadmap is default, Training is separate
 			$sections = array(
 				''              => __( 'Roadmap', 'hezarfen-for-woocommerce' ),
 				'training'      => __( 'Training', 'hezarfen-for-woocommerce' ),
@@ -53,7 +53,7 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 				'sms_settings'  => __( 'SMS Settings', 'hezarfen-for-woocommerce' ),
 			);
 		} else {
-			// Version > 2.7.30: Training is default, no Roadmap
+			// Version > 2.7.40: Training is default, no Roadmap
 			$sections = array(
 				''              => __( 'Training', 'hezarfen-for-woocommerce' ),
 				'general'       => __( 'General', 'hezarfen-for-woocommerce' ),
@@ -83,8 +83,8 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 	 * @return array<array<string, string>>
 	 */
 	protected function get_settings_for_default_section() {
-		// If version > 2.7.30, default is Training (no fields needed)
-		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '>' ) ) {
+		// If version > 2.7.40, default is Training (no fields needed)
+		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.40', '>' ) ) {
 			return array();
 		}
 		
@@ -125,6 +125,16 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 					'hezarfen-for-woocommerce'
 				),
 				'id'    => 'hezarfen_general_settings_title',
+			),
+			array(
+				'title'   => __(
+					'Enable district and neighborhood feature',
+					'hezarfen-for-woocommerce'
+				),
+				'type'    => 'checkbox',
+				'desc'    => '',
+				'id'      => 'hezarfen_enable_district_neighborhood_fields',
+				'default' => 'yes',
 			),
 			array(
 				'title'   => __(
@@ -451,6 +461,12 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 				'id'    => 'hezarfen_sms_settings_title',
 			),
 			array(
+				'title'   => __( 'NetGSM Connection', 'hezarfen-for-woocommerce' ),
+				'type'    => 'netgsm_connection_status',
+				'desc'    => __( 'Your NetGSM account connection status', 'hezarfen-for-woocommerce' ),
+				'id'      => 'hezarfen_netgsm_connection_status',
+			),
+			array(
 				'title'   => __( 'Enable SMS Automation', 'hezarfen-for-woocommerce' ),
 				'type'    => 'checkbox',
 				'desc'    => __( 'Enable automatic SMS notifications for order status changes', 'hezarfen-for-woocommerce' ),
@@ -472,6 +488,28 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 		return $fields;
 	}
 
+
+	/**
+	 * Output NetGSM connection status field
+	 *
+	 * @param array $value Field data
+	 * @return void
+	 */
+	public function output_netgsm_connection_status( $value ) {
+		?>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="<?php echo esc_attr( $value['id'] ); ?>"><?php echo esc_html( $value['title'] ); ?></label>
+			</th>
+			<td class="forminp">
+				<div id="netgsm-connection-status-main">
+					<!-- This will be populated by JavaScript -->
+				</div>
+				<p class="description"><?php echo esc_html( $value['desc'] ?? '' ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
 
 	/**
 	 * Output SMS rules button field
@@ -515,7 +553,15 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 										$action_label = __( 'PandaSMS Official Plugin (Legacy)', 'hezarfen-for-woocommerce' );
 									}
 
-									$phone_label = $rule['phone_type'] === 'billing' ? __( 'Billing Phone', 'hezarfen-for-woocommerce' ) : __( 'Shipping Phone', 'hezarfen-for-woocommerce' );
+									if ( $rule['phone_type'] === 'billing' ) {
+										$phone_label = __( 'Order Billing Phone', 'hezarfen-for-woocommerce' );
+									} elseif ( $rule['phone_type'] === 'shipping' ) {
+										$phone_label = __( 'Order Shipping Phone', 'hezarfen-for-woocommerce' );
+									} elseif ( $rule['phone_type'] === 'shipping_or_billing' ) {
+										$phone_label = __( 'Order Shipping Phone (or Billing if not available)', 'hezarfen-for-woocommerce' );
+									} else {
+										$phone_label = $rule['phone_type'];
+									}
 
 									echo wp_kses( 
 										sprintf( 
@@ -555,7 +601,7 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 									<label for="condition-status"><?php esc_html_e( 'Trigger Condition', 'hezarfen-for-woocommerce' ); ?></label>
 								</th>
 								<td>
-									<select id="condition-status" name="condition_status" required style="width: 300px;">
+									<select id="condition-status" name="condition_status" style="width: 300px;">
 										<option value=""><?php esc_html_e( 'Select trigger...', 'hezarfen-for-woocommerce' ); ?></option>
 										<optgroup label="<?php esc_attr_e( 'Order Status Changes', 'hezarfen-for-woocommerce' ); ?>">
 											<?php foreach ( wc_get_order_statuses() as $status_key => $status_label ) : ?>
@@ -576,7 +622,7 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 									<label for="action-type"><?php esc_html_e( 'Action Type', 'hezarfen-for-woocommerce' ); ?></label>
 								</th>
 								<td>
-									<select id="action-type" name="action_type" required style="width: 300px;">
+									<select id="action-type" name="action_type" style="width: 300px;">
 										<option value=""><?php esc_html_e( 'Select action...', 'hezarfen-for-woocommerce' ); ?></option>
 										<option value="netgsm"><?php esc_html_e( 'Send SMS via NetGSM', 'hezarfen-for-woocommerce' ); ?></option>
 																			<option value="netgsm_legacy"><?php esc_html_e( 'Send SMS via NetGSM Official Plugin (Legacy - Deprecated Soon)', 'hezarfen-for-woocommerce' ); ?></option>
@@ -621,8 +667,9 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 									<td>
 										<select id="netgsm-legacy-phone-type" name="netgsm_legacy_phone_type" style="width: 300px;">
 											<option value=""><?php esc_html_e( 'Select phone type...', 'hezarfen-for-woocommerce' ); ?></option>
-											<option value="billing"><?php esc_html_e( 'Billing Phone', 'hezarfen-for-woocommerce' ); ?></option>
-											<option value="shipping"><?php esc_html_e( 'Shipping Phone', 'hezarfen-for-woocommerce' ); ?></option>
+											<option value="billing"><?php esc_html_e( 'Order Billing Phone', 'hezarfen-for-woocommerce' ); ?></option>
+											<option value="shipping"><?php esc_html_e( 'Order Shipping Phone', 'hezarfen-for-woocommerce' ); ?></option>
+											<option value="shipping_or_billing"><?php esc_html_e( 'Order Shipping Phone (or Billing if not available)', 'hezarfen-for-woocommerce' ); ?></option>
 										</select>
 									</td>
 								</tr>
@@ -677,8 +724,9 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 									<td>
 										<select id="phone-type" name="phone_type" style="width: 300px;">
 											<option value=""><?php esc_html_e( 'Select phone type...', 'hezarfen-for-woocommerce' ); ?></option>
-											<option value="billing"><?php esc_html_e( 'Billing Phone', 'hezarfen-for-woocommerce' ); ?></option>
-											<option value="shipping"><?php esc_html_e( 'Shipping Phone', 'hezarfen-for-woocommerce' ); ?></option>
+											<option value="billing"><?php esc_html_e( 'Order Billing Phone', 'hezarfen-for-woocommerce' ); ?></option>
+											<option value="shipping"><?php esc_html_e( 'Order Shipping Phone', 'hezarfen-for-woocommerce' ); ?></option>
+											<option value="shipping_or_billing"><?php esc_html_e( 'Order Shipping Phone (or Billing if not available)', 'hezarfen-for-woocommerce' ); ?></option>
 										</select>
 									</td>
 								</tr>
@@ -740,10 +788,10 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 
 			require 'views/encryption.php';
 		} elseif ( '' === $current_section ) {
-			// Default section - Roadmap (if version <= 2.7.30) or Training (if version > 2.7.30)
+			// Default section - Roadmap (if version <= 2.7.40) or Training (if version > 2.7.40)
 			$hide_save_button = true;
 			
-			if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '<=' ) ) {
+			if ( version_compare( WC_HEZARFEN_VERSION, '2.7.40', '<=' ) ) {
 				// Show Roadmap
 				$settings = $this->get_settings_for_section( $current_section );
 				WC_Admin_Settings::output_fields( $settings );
@@ -1120,7 +1168,7 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 	private function output_netgsm_credentials_modal() {
 		?>
 		<!-- NetGSM Credentials Modal -->
-		<div id="netgsm-credentials-modal" class="hez-modal-overlay hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="netgsm-modal-title" aria-describedby="netgsm-modal-description" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 9999;">
+		<div id="netgsm-credentials-modal" class="hez-modal-overlay hidden inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="netgsm-modal-title" aria-describedby="netgsm-modal-description" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 9999;">
 			<div class="hez-modal-content bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" style="background: white; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-width: 28rem; width: 100%; margin: 0 1rem; transform: scale(0.95); opacity: 0; transition: all 0.3s;">
 				<div class="p-6" style="padding: 1.5rem;">
 					<!-- Modal Header -->
@@ -1291,8 +1339,8 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 			wp_enqueue_style( 'wc_hezarfen_settings_css', plugins_url( 'assets/admin/css/settings.css', WC_HEZARFEN_FILE ), array(), WC_HEZARFEN_VERSION );
 		}
 
-		if ( '' === $current_section && version_compare( WC_HEZARFEN_VERSION, '2.7.30', '<=' ) ) {
-			// Roadmap section (only for version <= 2.7.30)
+		if ( '' === $current_section && version_compare( WC_HEZARFEN_VERSION, '2.7.40', '<=' ) ) {
+			// Roadmap section (only for version <= 2.7.40)
 			wp_enqueue_script( 'wc_hezarfen_roadmap_js', plugins_url( 'assets/admin/js/roadmap.js', WC_HEZARFEN_FILE ), array( 'jquery' ), WC_HEZARFEN_VERSION, true );
 			wp_localize_script( 'wc_hezarfen_roadmap_js', 'hezarfenRoadmap', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -1368,8 +1416,9 @@ class Hezarfen_Settings_Hezarfen extends WC_Settings_Page {
 					'new_status' => __( 'New Status', 'hezarfen-for-woocommerce' ),
 					'send_sms' => __( 'Send SMS via NetGSM', 'hezarfen-for-woocommerce' ),
 					'phone_type' => __( 'Phone Number', 'hezarfen-for-woocommerce' ),
-					'billing_phone' => __( 'Billing Phone', 'hezarfen-for-woocommerce' ),
-					'shipping_phone' => __( 'Shipping Phone', 'hezarfen-for-woocommerce' ),
+					'billing_phone' => __( 'Order Billing Phone', 'hezarfen-for-woocommerce' ),
+					'shipping_phone' => __( 'Order Shipping Phone', 'hezarfen-for-woocommerce' ),
+					'shipping_or_billing_phone' => __( 'Order Shipping Phone (or Billing if not available)', 'hezarfen-for-woocommerce' ),
 					'message_template' => __( 'Message Template', 'hezarfen-for-woocommerce' ),
 					'iys_status' => __( 'IYS Status', 'hezarfen-for-woocommerce' ),
 					'iys_info' => __( 'Information (0)', 'hezarfen-for-woocommerce' ),

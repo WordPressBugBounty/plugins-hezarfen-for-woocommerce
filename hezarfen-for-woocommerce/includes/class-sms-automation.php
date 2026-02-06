@@ -136,7 +136,7 @@ class SMS_Automation {
 			),
 			'encoding' => 'TR',
 			'iysfilter' => $rule['iys_status'] ?? '0',
-			'partnercode' => ''
+			'partnercode' => 'F335A6CA'
 		);
 
 		// Send SMS via NetGSM API
@@ -357,7 +357,7 @@ class SMS_Automation {
 	 * Get phone number from order
 	 *
 	 * @param \WC_Order $order Order object
-	 * @param string $phone_type Phone type (billing or shipping)
+	 * @param string $phone_type Phone type (billing, shipping, or shipping_or_billing)
 	 * @return string
 	 */
 	private function get_phone_number( $order, $phone_type ) {
@@ -365,6 +365,13 @@ class SMS_Automation {
 			return $order->get_billing_phone();
 		} elseif ( $phone_type === 'shipping' ) {
 			return $order->get_shipping_phone();
+		} elseif ( $phone_type === 'shipping_or_billing' ) {
+			// Try shipping phone first, fallback to billing phone if shipping is empty
+			$shipping_phone = $order->get_shipping_phone();
+			if ( ! empty( $shipping_phone ) ) {
+				return $shipping_phone;
+			}
+			return $order->get_billing_phone();
 		}
 		return '';
 	}
@@ -621,8 +628,9 @@ class SMS_Automation {
 	 */
 	public static function get_translatable_phone_type_names() {
 		return array(
-			'billing' => __( 'Billing Phone', 'hezarfen-for-woocommerce' ),
-			'shipping' => __( 'Shipping Phone', 'hezarfen-for-woocommerce' ),
+			'billing' => __( 'Order Billing Phone', 'hezarfen-for-woocommerce' ),
+			'shipping' => __( 'Order Shipping Phone', 'hezarfen-for-woocommerce' ),
+			'shipping_or_billing' => __( 'Order Shipping Phone (or Billing if not available)', 'hezarfen-for-woocommerce' ),
 		);
 	}
 
@@ -745,14 +753,14 @@ class SMS_Automation {
 			'{fatura_epostasi}' => $order->get_billing_email(),
 			'{fatura_sirket}' => $order->get_billing_company(),
 			'{fatura_adresi}' => $order->get_billing_address_1() . ( $order->get_billing_address_2() ? ' ' . $order->get_billing_address_2() : '' ),
-			'{fatura_sehir}' => $order->get_billing_city(),
+			'{fatura_sehir}' => WC()->countries->states[ $order->get_billing_country() ][ $order->get_billing_state() ] ?? $order->get_billing_state(),
 			'{fatura_ulke}' => $order->get_billing_country(),
 			'{kargo_adi}' => $order->get_shipping_first_name(),
 			'{kargo_soyadi}' => $order->get_shipping_last_name(),
 			'{kargo_telefonu}' => $order->get_shipping_phone(),
 			'{kargo_sirket}' => $order->get_shipping_company(),
 			'{kargo_adresi}' => $order->get_shipping_address_1() . ( $order->get_shipping_address_2() ? ' ' . $order->get_shipping_address_2() : '' ),
-			'{kargo_sehir}' => $order->get_shipping_city(),
+			'{kargo_sehir}' => WC()->countries->states[ $order->get_shipping_country() ][ $order->get_shipping_state() ?: $order->get_billing_state() ],
 			'{kargo_ulke}' => $order->get_shipping_country(),
 			
 			// English equivalents for compatibility
@@ -770,7 +778,7 @@ class SMS_Automation {
 			'{billing_email}' => $order->get_billing_email(),
 			'{billing_company}' => $order->get_billing_company(),
 			'{billing_address}' => $order->get_billing_address_1() . ( $order->get_billing_address_2() ? ' ' . $order->get_billing_address_2() : '' ),
-			'{billing_city}' => $order->get_billing_city(),
+			'{billing_city}' => WC()->countries->states[ $order->get_billing_country() ][ $order->get_billing_state() ] ?? $order->get_billing_state(),
 			'{billing_country}' => $order->get_billing_country(),
 			
 			// Shipping variables
@@ -779,7 +787,7 @@ class SMS_Automation {
 			'{shipping_phone}' => $order->get_shipping_phone(),
 			'{shipping_company}' => $order->get_shipping_company(),
 			'{shipping_address}' => $order->get_shipping_address_1() . ( $order->get_shipping_address_2() ? ' ' . $order->get_shipping_address_2() : '' ),
-			'{shipping_city}' => $order->get_shipping_city(),
+			'{shipping_city}' => WC()->countries->states[ $order->get_shipping_country() ][ $order->get_shipping_state() ?: $order->get_billing_state() ],
 			'{shipping_country}' => $order->get_shipping_country(),
 			
 			// Shipment variables
@@ -1256,8 +1264,8 @@ class SMS_Automation {
 			'is_connected' => $is_connected,
 			'credentials' => $is_connected ? array(
 				'username' => $credentials['username'],
+				'password' => $credentials['password'],
 				'msgheader' => $credentials['msgheader'],
-				// Don't send password back for security
 			) : null,
 		) );
 	}
@@ -1295,11 +1303,11 @@ class SMS_Automation {
 		$response_code = wp_remote_retrieve_response_code( $response );
 		$response_body = wp_remote_retrieve_body( $response );
 
-		if ( $response_code !== 200 ) {
+		$data = json_decode( $response_body, true );
+
+		if ( ! is_array( $data ) ) {
 			return new WP_Error( 'netgsm_api_error', 'NetGSM API returned error code: ' . $response_code );
 		}
-
-		$data = json_decode( $response_body, true );
 
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			return new WP_Error( 'json_decode_error', 'Failed to decode NetGSM API response' );

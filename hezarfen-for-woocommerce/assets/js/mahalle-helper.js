@@ -63,6 +63,10 @@ class hezarfen_mahalle_helper {
 		};
 
 		jQuery.get(hezarfen_mahalle_helper_backend.api_url, data, function (response) {
+			if (!Array.isArray(response)) {
+				return;
+			}
+
 			for (const district_name of response) {
 				thisHelper.get_city_field().append(thisHelper.create_option(district_name, district_name));
 			}
@@ -96,6 +100,10 @@ class hezarfen_mahalle_helper {
 		};
 
 		jQuery.get(hezarfen_mahalle_helper_backend.api_url, data, function (response) {
+			if (!Array.isArray(response)) {
+				return;
+			}
+
 			for (const neighborhood_name of response) {
 				thisHelper.get_nbrhood_field().append(thisHelper.create_option(neighborhood_name, neighborhood_name));
 			}
@@ -114,7 +122,7 @@ class hezarfen_mahalle_helper {
 			this.add_event_handlers();
 		} else {
 			// Remove select2:select event handler from the state field.
-			this.get_state_field().off('change');
+			this.get_state_field().off('change.hezarfen');
 
 			// Replace city and address_1 fields with input elements.
 			this.replaceElementsWith(elements, 'input', additional_classes);

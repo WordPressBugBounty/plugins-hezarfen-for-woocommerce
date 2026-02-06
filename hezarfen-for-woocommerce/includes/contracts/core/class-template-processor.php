@@ -158,9 +158,12 @@ class Template_Processor {
 			'{{fatura_sirket}}' => $order->get_billing_company(),
 			'{{fatura_adres_1}}' => $order->get_billing_address_1(),
 			'{{fatura_adres_2}}' => $order->get_billing_address_2(),
-			'{{fatura_sehir}}' => $order->get_billing_city(),
+			'{{fatura_ilce}}' => $order->get_billing_city(),
+			'{{fatura_sehir}}' => WC()->countries->states[ $order->get_billing_country() ][ $order->get_billing_state() ] ?? $order->get_billing_state(),
 			'{{fatura_posta_kodu}}' => $order->get_billing_postcode(),
 			'{{fatura_ulke}}' => WC()->countries->countries[ $order->get_billing_country() ] ?? $order->get_billing_country(),
+			'{{fatura_telefon}}' => $order->get_billing_phone(),
+			'{{fatura_eposta}}' => $order->get_billing_email(),
 			
 			// New format - Shipping Address Variables
 			'{{teslimat_adi}}' => $order->get_shipping_first_name() ?: $order->get_billing_first_name(),
@@ -168,7 +171,8 @@ class Template_Processor {
 			'{{teslimat_sirket}}' => $order->get_shipping_company() ?: $order->get_billing_company(),
 			'{{teslimat_adres_1}}' => $order->get_shipping_address_1() ?: $order->get_billing_address_1(),
 			'{{teslimat_adres_2}}' => $order->get_shipping_address_2() ?: $order->get_billing_address_2(),
-			'{{teslimat_sehir}}' => $order->get_shipping_city() ?: $order->get_billing_city(),
+			'{{teslimat_ilce}}' => $order->get_shipping_city(),
+			'{{teslimat_sehir}}' => WC()->countries->states[ $order->get_shipping_country() ][ $order->get_shipping_state() ?: $order->get_billing_state() ],
 			'{{teslimat_posta_kodu}}' => $order->get_shipping_postcode() ?: $order->get_billing_postcode(),
 			'{{teslimat_ulke}}' => WC()->countries->countries[ $order->get_shipping_country() ?: $order->get_billing_country() ] ?? ($order->get_shipping_country() ?: $order->get_billing_country()),
 		);
@@ -335,6 +339,9 @@ class Template_Processor {
 				$payment_method_title = $payment_gateways[ $payment_method ]->get_title();
 			}
 		}
+
+		$billing_state = WC()->countries->states[ $form_data['billing_country'] ][ $form_data['billing_state'] ] ?? $form_data['billing_state'];
+		$shipping_state = WC()->countries->states[ $form_data['shipping_country'] ][ $form_data['shipping_state'] ] ?? $form_data['shipping_state'];
 		
 		$replacements = array(
 			// Form data variables (from checkout form)
@@ -343,9 +350,12 @@ class Template_Processor {
 			'{{fatura_sirket}}' => isset( $form_data['billing_company'] ) ? sanitize_text_field( $form_data['billing_company'] ) : '',
 			'{{fatura_adres_1}}' => isset( $form_data['billing_address_1'] ) ? sanitize_text_field( $form_data['billing_address_1'] ) : '',
 			'{{fatura_adres_2}}' => isset( $form_data['billing_address_2'] ) ? sanitize_text_field( $form_data['billing_address_2'] ) : '',
-			'{{fatura_sehir}}' => isset( $form_data['billing_city'] ) ? sanitize_text_field( $form_data['billing_city'] ) : '',
+			'{{fatura_sehir}}' => $billing_state,
+			'{{fatura_ilce}}' => isset( $form_data['billing_city'] ) ? sanitize_text_field( $form_data['billing_city'] ) : '',
 			'{{fatura_posta_kodu}}' => isset( $form_data['billing_postcode'] ) ? sanitize_text_field( $form_data['billing_postcode'] ) : '',
 			'{{fatura_ulke}}' => isset( $form_data['billing_country'] ) ? self::get_country_name( sanitize_text_field( $form_data['billing_country'] ) ) : '',
+			'{{fatura_telefon}}' => isset( $form_data['billing_phone'] ) ? sanitize_text_field( $form_data['billing_phone'] ) : '',
+			'{{fatura_eposta}}' => isset( $form_data['billing_email'] ) ? sanitize_email( $form_data['billing_email'] ) : '',
 			
 			// Payment method from form data
 			'{{odeme_yontemi}}' => ! empty( $payment_method_title ) ? $payment_method_title : __( 'Will be determined at payment', 'hezarfen-for-woocommerce' ),
@@ -360,7 +370,8 @@ class Template_Processor {
 				'{{teslimat_sirket}}' => isset( $form_data['shipping_company'] ) ? sanitize_text_field( $form_data['shipping_company'] ) : '',
 				'{{teslimat_adres_1}}' => isset( $form_data['shipping_address_1'] ) ? sanitize_text_field( $form_data['shipping_address_1'] ) : '',
 				'{{teslimat_adres_2}}' => isset( $form_data['shipping_address_2'] ) ? sanitize_text_field( $form_data['shipping_address_2'] ) : '',
-				'{{teslimat_sehir}}' => isset( $form_data['shipping_city'] ) ? sanitize_text_field( $form_data['shipping_city'] ) : '',
+				'{{teslimat_sehir}}' => $shipping_state,
+				'{{teslimat_ilce}}' => isset( $form_data['shipping_city'] ) ? sanitize_text_field( $form_data['shipping_city'] ) : '',
 				'{{teslimat_posta_kodu}}' => isset( $form_data['shipping_postcode'] ) ? sanitize_text_field( $form_data['shipping_postcode'] ) : '',
 				'{{teslimat_ulke}}' => isset( $form_data['shipping_country'] ) ? self::get_country_name( sanitize_text_field( $form_data['shipping_country'] ) ) : '',
 			) );
@@ -372,7 +383,8 @@ class Template_Processor {
 				'{{teslimat_sirket}}' => isset( $form_data['billing_company'] ) ? sanitize_text_field( $form_data['billing_company'] ) : '',
 				'{{teslimat_adres_1}}' => isset( $form_data['billing_address_1'] ) ? sanitize_text_field( $form_data['billing_address_1'] ) : '',
 				'{{teslimat_adres_2}}' => isset( $form_data['billing_address_2'] ) ? sanitize_text_field( $form_data['billing_address_2'] ) : '',
-				'{{teslimat_sehir}}' => isset( $form_data['billing_city'] ) ? sanitize_text_field( $form_data['billing_city'] ) : '',
+				'{{teslimat_sehir}}' => $billing_state,
+				'{{teslimat_ilce}}' => isset( $form_data['shipping_city'] ) ? sanitize_text_field( $form_data['shipping_city'] ) : '',
 				'{{teslimat_posta_kodu}}' => isset( $form_data['billing_postcode'] ) ? sanitize_text_field( $form_data['billing_postcode'] ) : '',
 				'{{teslimat_ulke}}' => isset( $form_data['billing_country'] ) ? self::get_country_name( sanitize_text_field( $form_data['billing_country'] ) ) : '',
 			) );
@@ -400,6 +412,11 @@ class Template_Processor {
 			
 			// Skip hidden meta (starts with _)
 			if ( strpos( $key, '_' ) === 0 ) {
+				continue;
+			}
+
+			$should_include = apply_filters( 'hezarfen_contracts_include_item_meta', true, $key, $meta_data_array, $item );
+			if ( ! $should_include ) {
 				continue;
 			}
 			

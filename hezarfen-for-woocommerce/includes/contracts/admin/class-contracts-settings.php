@@ -508,9 +508,12 @@ public function output_available_variables( $value ) {
 			'{{fatura_sirket}}' => __( 'Billing company name', 'hezarfen-for-woocommerce' ),
 			'{{fatura_adres_1}}' => __( 'Billing address line 1', 'hezarfen-for-woocommerce' ),
 			'{{fatura_adres_2}}' => __( 'Billing address line 2', 'hezarfen-for-woocommerce' ),
+			'{{fatura_ilce}}' => __( 'Billing district', 'hezarfen-for-woocommerce' ),
 			'{{fatura_sehir}}' => __( 'Billing city', 'hezarfen-for-woocommerce' ),
 			'{{fatura_posta_kodu}}' => __( 'Billing postal code', 'hezarfen-for-woocommerce' ),
 			'{{fatura_ulke}}' => __( 'Billing country', 'hezarfen-for-woocommerce' ),
+			'{{fatura_telefon}}' => __( 'Billing phone', 'hezarfen-for-woocommerce' ),
+			'{{fatura_eposta}}' => __( 'Billing email', 'hezarfen-for-woocommerce' ),
 		),
 		
 		// Shipping Address Variables
@@ -520,6 +523,7 @@ public function output_available_variables( $value ) {
 			'{{teslimat_sirket}}' => __( 'Shipping company name', 'hezarfen-for-woocommerce' ),
 			'{{teslimat_adres_1}}' => __( 'Shipping address line 1', 'hezarfen-for-woocommerce' ),
 			'{{teslimat_adres_2}}' => __( 'Shipping address line 2', 'hezarfen-for-woocommerce' ),
+			'{{teslimat_ilce}}' => __( 'Shipping district', 'hezarfen-for-woocommerce' ),
 			'{{teslimat_sehir}}' => __( 'Shipping city', 'hezarfen-for-woocommerce' ),
 			'{{teslimat_posta_kodu}}' => __( 'Shipping postal code', 'hezarfen-for-woocommerce' ),
 			'{{teslimat_ulke}}' => __( 'Shipping country', 'hezarfen-for-woocommerce' ),

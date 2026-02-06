@@ -72,6 +72,10 @@ class Hezarfen {
 	 * @return array<array<string, mixed>>
 	 */
 	public function modify_tr_locale( $locales ) {
+		if ( 'yes' !== apply_filters( 'hezarfen_enable_district_neighborhood_fields', get_option( 'hezarfen_enable_district_neighborhood_fields', 'yes' ) ) ) {
+			return $locales;
+		}
+
 		$locales['TR']['city'] = array_merge(
 			$locales['TR']['city'] ?? array(),
 			array(
@@ -274,6 +278,10 @@ class Hezarfen {
 			return;
 		}
 
+		if ( 'yes' !== apply_filters( 'hezarfen_enable_district_neighborhood_fields', get_option( 'hezarfen_enable_district_neighborhood_fields', 'yes' ) ) ) {
+			return;
+		}
+
 		// Check if address_2 field is hidden
 		$address_2_visibility = get_option( 'woocommerce_checkout_address_2_field', 'optional' );
 		
@@ -290,7 +298,7 @@ class Hezarfen {
 	 */
 	public function handle_roadmap_vote_submission_proxy() {
 		// Check if roadmap voting is available for this version
-		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '>' ) ) {
+		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.40', '>' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Roadmap oylaması bu sürümde artık mevcut değil.', 'hezarfen-for-woocommerce' ) ) );
 			return;
 		}
@@ -420,8 +428,8 @@ class Hezarfen {
 	 * @return void
 	 */
 	public function show_roadmap_contribution_notice() {
-		// Only show if version <= 2.7.30
-		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.30', '>' ) ) {
+		// Only show if version <= 2.7.40
+		if ( version_compare( WC_HEZARFEN_VERSION, '2.7.40', '>' ) ) {
 			return;
 		}
 

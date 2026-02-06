@@ -2,6 +2,69 @@
 defined('ABSPATH') || exit;
 
 use \Hezarfen\ManualShipmentTracking\Helper;
+use \Hezarfen\ManualShipmentTracking\Courier_Hepsijet_Integration;
+
+// Get order data for return address fields
+$return_order = wc_get_order($order_id);
+$return_address_data = array(
+    'first_name' => '',
+    'last_name' => '',
+    'city' => '',
+    'district' => '',
+    'neighborhood' => '',
+    'address' => '',
+    'phone' => '',
+);
+
+if ($return_order) {
+    // Name fields - only from shipping
+    $return_address_data['first_name'] = $return_order->get_shipping_first_name();
+    $return_address_data['last_name'] = $return_order->get_shipping_last_name();
+
+    $shipping_country = $return_order->get_shipping_country();
+    $shipping_state = $return_order->get_shipping_state();
+
+    // City (Il) - from WooCommerce states (Turkey uses state for city)
+    if ($shipping_country && $shipping_state && isset(WC()->countries->states[$shipping_country][$shipping_state])) {
+        $return_address_data['city'] = WC()->countries->states[$shipping_country][$shipping_state];
+    }
+
+    // District (Ilce) - stored in city field for Turkey
+    $return_address_data['district'] = $return_order->get_shipping_city();
+
+    // Neighborhood (Mahalle) - stored in address_1 for Turkey
+    $return_address_data['neighborhood'] = $return_order->get_shipping_address_1();
+
+    // Address - stored in address_2 for Turkey
+    $return_address_data['address'] = $return_order->get_shipping_address_2();
+
+    // Phone: try shipping first, fallback to billing
+    $return_address_data['phone'] = $return_order->get_shipping_phone() ?: $return_order->get_billing_phone();
+}
+
+// Fetch warehouses for Hepsijet
+$warehouses_data = array();
+$has_multiple_warehouses = false;
+$warehouse_error = null;
+$has_hepsijet_credentials = Courier_Hepsijet_Integration::has_credentials();
+
+if ( $has_hepsijet_credentials ) {
+    try {
+        $hepsijet_integration_warehouses = new Courier_Hepsijet_Integration();
+        $warehouses_response = $hepsijet_integration_warehouses->get_warehouses();
+
+        if ( is_wp_error( $warehouses_response ) ) {
+            $warehouse_error = $warehouses_response->get_error_message();
+        } elseif ( isset( $warehouses_response['warehouses'] ) ) {
+            $warehouses_data = $warehouses_response['warehouses'];
+            $has_multiple_warehouses = count( $warehouses_data ) > 1;
+        } else {
+            $warehouse_error = 'Invalid response format';
+        }
+    } catch ( Exception $e ) {
+        $warehouse_error = $e->getMessage();
+    }
+}
 ?>
 <style>
 @keyframes pulse {
@@ -11,6 +74,44 @@ use \Hezarfen\ManualShipmentTracking\Helper;
   50% {
     opacity: 0.7;
   }
+}
+
+#hepsijet-rotating-info .hez-pricing {
+    font-size: 1.125rem !important;
+}
+
+#hepsijet-rotating-info .hez-desi-range {
+    font-size: 16px !important;
+}
+
+@media (max-width: 1760px) {
+    .hezarfen-responsive-btn.text-sm {
+        font-size: 0.65rem !important;
+        line-height: 1.2 !important;
+        padding: 0.375rem 0.625rem !important;
+    }
+    .hezarfen-responsive-btn.text-sm svg {
+        width: 0.875rem !important;
+        height: 0.875rem !important;
+    }
+
+    .rotating-item .text-xs {
+        font-size: 0.65rem !important;
+        line-height: 1.2 !important;
+        padding: 0.2rem 0.25rem !important;
+    }
+
+    #hepsijet-rotating-info .hez-pricing {
+        font-size: 0.875rem !important;
+        line-height: 1.2 !important;
+        padding: 0 !important;
+    }
+
+    #hepsijet-rotating-info .hez-desi-range {
+        font-size: 0.65rem !important;
+        line-height: 1.2 !important;
+        padding: 0 !important;
+    }
 }
 </style>
 <div id="hez-order-shipments" class="hez-ui">
@@ -83,8 +184,8 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                         if ($pricing_info !== false) {
                                                             $price = $pricing_info['price_1_desi'];
                                                             $desi_range = $pricing_info['display_text'];
-                                                            echo '<span style="font-weight: bold !important; font-size: 1.125rem !important; color: #2563eb !important;">' . esc_html(number_format($price, 2, ',', '')) . '₺+KDV</span>';
-                                                            echo ' <span style="font-size: 16px;" class="text-gray-700 font-medium">(' . esc_html($desi_range) . ')</span>';
+                                                            echo '<span class="hez-pricing" style="font-weight: bold !important; color: #2563eb !important;">' . esc_html(number_format($price, 2, ',', '')) . '₺+KDV</span>';
+                                                            echo ' <span class="hez-desi-range text-gray-700 font-medium">(' . esc_html($desi_range) . ')</span>';
                                                         }
                                                     } catch (Exception $e) {
                                                     }
@@ -101,7 +202,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                 <!-- Avantaj 2 -->
                                                 <div class="rotating-item">
                                                     <span class="text-xs bg-orange-500 text-white px-2 py-1 rounded-full shadow-sm font-medium">
-                                                        <?php esc_html_e('Aylık alt gönderim limiti yoktur', 'hezarfen-for-woocommerce'); ?>
+                                                        <?php esc_html_e('Min. gönderim limiti yok', 'hezarfen-for-woocommerce'); ?>
                                                     </span>
                                                 </div>
                                                 
@@ -168,7 +269,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                             ?>
 
                             <div class="mb-4 flex items-center justify-between">
-                                <span class="text-sm font-medium text-orange-600" style="font-size: 13px !important;">intense.com.tr & Hepsijet işbirliği ile Avantajlı Kargo Fiyatları</span>
+                                <span class="text-sm font-medium text-orange-600" style="font-size: 13px !important;">kargokit.com & Hepsijet işbirliği ile Avantajlı Kargo Fiyatları</span>
                                 <button type="button" id="hepsijet-help-toggle" class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ml-2">
                                     <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -208,7 +309,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                     <p class="text-xs text-gray-600">
                                                         <?php printf( 
                                                             esc_html__('Create or sign in to your %s account', 'hezarfen-for-woocommerce'), 
-                                                            '<strong>intense.com.tr</strong>' 
+                                                            '<strong>kargokit.com</strong>' 
                                                         ); ?>
                                                     </p>
                                                 </div>
@@ -242,8 +343,8 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                 </div>
                                             </div>
                                             <div class="flex gap-2 mt-6">
-                                                <a href="https://intense.com.tr" target="_blank" class="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center">
-                                                    <?php esc_html_e('Go to intense.com.tr', 'hezarfen-for-woocommerce'); ?>
+                                                <a href="https://kargokit.com" target="_blank" class="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center">
+                                                    <?php esc_html_e('Go to kargokit.com', 'hezarfen-for-woocommerce'); ?>
                                                 </a>
                                                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=hepsijet_integration' ) ); ?>" target="_blank" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 text-center">
                                                     <?php esc_html_e('Settings', 'hezarfen-for-woocommerce'); ?>
@@ -301,7 +402,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                 <p class="text-xs text-gray-600">
                                                     <?php printf( 
                                                         esc_html__('Create or sign in to your %s account', 'hezarfen-for-woocommerce'), 
-                                                        '<strong>intense.com.tr</strong>' 
+                                                        '<strong>kargokit.com</strong>' 
                                                     ); ?>
                                                 </p>
                                             </div>
@@ -336,8 +437,8 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                         </div>
                                         
                                         <div class="flex gap-2 mt-6">
-                                            <a href="https://intense.com.tr" target="_blank" class="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center">
-                                                <?php esc_html_e('Go to intense.com.tr', 'hezarfen-for-woocommerce'); ?>
+                                            <a href="https://kargokit.com" target="_blank" class="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center">
+                                                <?php esc_html_e('Go to kargokit.com', 'hezarfen-for-woocommerce'); ?>
                                             </a>
                                             <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=hepsijet_integration' ) ); ?>" target="_blank" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 text-center">
                                                 <?php esc_html_e('Settings', 'hezarfen-for-woocommerce'); ?>
@@ -350,7 +451,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                             <!-- Wallet Balance Display -->
                             <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-sm font-medium text-blue-800">intense.com.tr <?php esc_html_e('Shipment Balance:', 'hezarfen-for-woocommerce'); ?></span>
+                                    <span class="text-sm font-medium text-blue-800">kargokit.com <?php esc_html_e('Shipment Balance:', 'hezarfen-for-woocommerce'); ?></span>
                                     <div class="flex items-center gap-2">
                                         <?php if ( $credentials_missing ): ?>
                                             <span id="kargogate-balance" class="text-sm font-bold text-blue-600">
@@ -368,14 +469,84 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label for="hepsijet-package-count" class="font-light text-gray-1 block mb-2 text-sm dark:text-white"><?php esc_html_e('Koli Adedi', 'hezarfen-for-woocommerce'); ?></label>
-                                    <input type="number" id="hepsijet-package-count" min="1" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-3 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
+                            <!-- Delivery Type -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('Delivery Type', 'hezarfen-for-woocommerce'); ?></label>
+                                <ul class="grid w-full gap-2 grid-cols-2" style="max-width: 400px;">
+                                    <li>
+                                        <input type="radio" id="hepsijet-delivery-type-standard" name="hepsijet-delivery-type" value="standard" class="hidden peer" checked>
+                                        <label for="hepsijet-delivery-type-standard" class="inline-flex items-center justify-center w-full p-2 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:text-blue-600 peer-checked:bg-blue-50 hover:text-gray-600 hover:bg-gray-100">
+                                            <span class="text-sm font-medium"><?php esc_html_e('Shipment', 'hezarfen-for-woocommerce'); ?></span>
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <input type="radio" id="hepsijet-delivery-type-returned" name="hepsijet-delivery-type" value="returned" class="hidden peer">
+                                        <label for="hepsijet-delivery-type-returned" class="inline-flex items-center justify-center w-full p-2 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:text-blue-600 peer-checked:bg-blue-50 hover:text-gray-600 hover:bg-gray-100">
+                                            <span class="text-sm font-medium"><?php esc_html_e('Return by appointment', 'hezarfen-for-woocommerce'); ?></span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Warehouse Selection -->
+                            <?php if ( $has_hepsijet_credentials ) : ?>
+                            <div class="mb-4" id="hepsijet-warehouse-container">
+                                <label for="hepsijet-warehouse" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <?php esc_html_e( 'Depo Seçiniz', 'hezarfen-for-woocommerce' ); ?>
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <?php if ( ! empty( $warehouses_data ) ) : ?>
+                                    <select id="hepsijet-warehouse" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-loaded-server-side="true">
+                                        <?php if ( $has_multiple_warehouses ) : ?>
+                                            <option value=""><?php esc_html_e( 'Depo seçiniz', 'hezarfen-for-woocommerce' ); ?></option>
+                                        <?php endif; ?>
+                                        <?php foreach ( $warehouses_data as $warehouse ) : ?>
+                                            <option value="<?php echo esc_attr( $warehouse['id'] ); ?>" 
+                                                    data-type="<?php echo esc_attr( $warehouse['type'] ); ?>"
+                                                    <?php selected( ! $has_multiple_warehouses ); ?>>
+                                                <?php echo esc_html( $warehouse['label'] ); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <?php if ( ! $has_multiple_warehouses ) : ?>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <?php esc_html_e( 'Tek deponuz var. Daha fazla depo eklemek için KargoKit müşteri hizmetleriyle iletişime geçin', 'hezarfen-for-woocommerce' ); ?>
+                                    </p>
+                                    <?php endif; ?>
+                                <?php else : ?>
+                                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                        <p class="text-sm text-red-800">
+                                            <?php 
+                                            if ( $warehouse_error ) {
+                                                printf( 
+                                                    esc_html__( 'Depo bilgisi yüklenemedi: %s', 'hezarfen-for-woocommerce' ),
+                                                    esc_html( $warehouse_error )
+                                                );
+                                            } else {
+                                                esc_html_e( 'Depo bilgisi yüklenemedi. Lütfen kargokit.com hesabınızda firma kaydınızı tamamladığınızdan emin olun.', 'hezarfen-for-woocommerce' );
+                                            }
+                                            ?>
+                                        </p>
+                                    </div>
+                                    <select id="hepsijet-warehouse" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" disabled>
+                                        <option value="">Depo bulunamadı</option>
+                                    </select>
+                                <?php endif; ?>
+                            </div>
+                            <?php endif; ?>
+
+                            <div class="mb-4" id="hepsijet-packages-section">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="block text-sm font-medium text-gray-700"><?php esc_html_e('Koliler', 'hezarfen-for-woocommerce'); ?></label>
+                                    <button type="button" id="add-hepsijet-package" class="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        <?php esc_html_e('Koli Ekle', 'hezarfen-for-woocommerce'); ?>
+                                    </button>
                                 </div>
-                                <div>
-                                    <label for="hepsijet-desi" class="font-light text-gray-1 block mb-2 text-sm dark:text-white"><?php esc_html_e('Desi', 'hezarfen-for-woocommerce'); ?></label>
-                                    <input type="number" id="hepsijet-desi" step="0.01" min="0.01" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-3 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
+                                <div id="hepsijet-packages-container" class="space-y-2">
+                                    <!-- Package items will be dynamically added here -->
                                 </div>
                             </div>
 
@@ -393,41 +564,64 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                 </div>
                             <?php endif; ?>
                             
-                            
-                            <!-- Delivery Type - Feature Flag: Hidden for now, hard-coded to 'standard' -->
-                            <?php 
-                            // Feature flag: Set to true when ready to release delivery type selection
-                            $show_delivery_type_dropdown = false;
-                            
-                            if ($show_delivery_type_dropdown): ?>
-                            <div class="mb-4">
-                                <label for="hepsijet-delivery-type" class="font-light text-gray-1 block mb-2 text-sm dark:text-white"><?php esc_html_e('Delivery Type', 'hezarfen-for-woocommerce'); ?></label>
-                                <select id="hepsijet-delivery-type" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-3 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light">
-                                    <option value="standard"><?php esc_html_e('Shipment', 'hezarfen-for-woocommerce'); ?></option>
-                                    <option value="returned"><?php esc_html_e('Return', 'hezarfen-for-woocommerce'); ?></option>
-                                </select>
-                            </div>
-                            <?php else: ?>
-                            <!-- Hidden delivery type field - hard-coded to 'standard' -->
-                            <input type="hidden" id="hepsijet-delivery-type" value="standard">
-                            <?php endif; ?>
-                            
-                            <!-- Delivery Slot (for sameday/nextday) -->
-                            <div class="mb-4 hidden" id="hepsijet-delivery-slot-container">
-                                <label for="hepsijet-delivery-slot" class="font-light text-gray-1 block mb-2 text-sm dark:text-white"><?php esc_html_e('Delivery Slot', 'hezarfen-for-woocommerce'); ?></label>
-                                <select id="hepsijet-delivery-slot" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-3 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light">
-                                    <option value="1">09:00–13:00</option>
-                                    <option value="2">13:00–18:00</option>
-                                    <option value="3">18:00–23:00</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Return Date (for return type) -->
-                            <div class="mb-4 hidden" id="hepsijet-return-date-container">
-                                <label for="hepsijet-return-date" class="font-light text-gray-1 block mb-2 text-sm dark:text-white"><?php esc_html_e('Return Date', 'hezarfen-for-woocommerce'); ?></label>
-                                <select id="hepsijet-return-date" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-3 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light">
-                                    <option value=""><?php esc_html_e('Loading available dates...', 'hezarfen-for-woocommerce'); ?></option>
-                                </select>
+                            <!-- Return Fields Container (for return type) -->
+                            <div style="display: none;" id="hepsijet-return-fields-container">
+                                <!-- Return Address Fields -->
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label for="hepsijet-return-first-name" class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('First Name', 'hezarfen-for-woocommerce'); ?> <span class="text-red-500">*</span></label>
+                                        <input type="text" id="hepsijet-return-first-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<?php echo esc_attr($return_address_data['first_name']); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="hepsijet-return-last-name" class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('Last Name', 'hezarfen-for-woocommerce'); ?> <span class="text-red-500">*</span></label>
+                                        <input type="text" id="hepsijet-return-last-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<?php echo esc_attr($return_address_data['last_name']); ?>">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label for="hepsijet-return-phone" class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('Phone', 'hezarfen-for-woocommerce'); ?> <span class="text-red-500">*</span></label>
+                                        <input type="text" id="hepsijet-return-phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<?php echo esc_attr($return_address_data['phone']); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="hepsijet-return-city" class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('City', 'hezarfen-for-woocommerce'); ?> <span class="text-red-500">*</span></label>
+                                        <input type="text" id="hepsijet-return-city" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<?php echo esc_attr($return_address_data['city']); ?>">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label for="hepsijet-return-district" class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('District', 'hezarfen-for-woocommerce'); ?> <span class="text-red-500">*</span></label>
+                                        <input type="text" id="hepsijet-return-district" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<?php echo esc_attr($return_address_data['district']); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="hepsijet-return-neighborhood" class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('Neighborhood', 'hezarfen-for-woocommerce'); ?> <span class="text-red-500">*</span></label>
+                                        <input type="text" id="hepsijet-return-neighborhood" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<?php echo esc_attr($return_address_data['neighborhood']); ?>">
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="hepsijet-return-address" class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('Address', 'hezarfen-for-woocommerce'); ?> <span class="text-red-500">*</span></label>
+                                    <textarea id="hepsijet-return-address" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><?php echo esc_textarea($return_address_data['address']); ?></textarea>
+                                </div>
+
+                                <!-- Fetch Available Dates Button -->
+                                <div class="mb-4">
+                                    <button type="button" id="hepsijet-fetch-return-dates" class="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-lg transition-colors duration-200">
+                                        <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <?php esc_html_e('Alım Yapılabilecek Tarihleri Listele', 'hezarfen-for-woocommerce'); ?>
+                                    </button>
+                                </div>
+
+                                <!-- Return Date (hidden by default, shown after fetching dates) -->
+                                <div class="mb-4 hidden" id="hepsijet-return-date-container">
+                                    <label for="hepsijet-return-date" class="block text-sm font-medium text-gray-700 mb-2"><?php esc_html_e('Return Date', 'hezarfen-for-woocommerce'); ?> <span class="text-red-500">*</span></label>
+                                    <select id="hepsijet-return-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value=""><?php esc_html_e('Select a date', 'hezarfen-for-woocommerce'); ?></option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -441,46 +635,46 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                     </div>
                 </div>
                 <div id="hezarfen-right-side">
-                    <!-- SMS Settings Icon Button - Top Right -->
+  <!-- SMS Settings Icon Button - Top Right -->
                     <div class="flex justify-end mb-4 gap-2">
                                                  <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=hepsijet_integration' ) ); ?>" 
-                         class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all duration-200 group" 
-                         target="_blank"
-                         title="<?php esc_attr_e( 'Configure Hepsijet Integration Settings', 'hezarfen-for-woocommerce' ); ?>">
-                             <svg class="w-4 h-4 mr-2 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                             </svg>
-                             <?php esc_html_e( 'Hepsijet Integration Settings', 'hezarfen-for-woocommerce' ); ?>
-                            <svg style="max-height: 50px" class="w-3 h-3 ml-1 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                        </a>
-                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=sms_settings' ) ); ?>" 
-                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all duration-200 group" 
+                        class="hezarfen-responsive-btn inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all duration-200 group" 
                         target="_blank"
-                        title="<?php esc_attr_e( 'Configure SMS automation for order status changes', 'hezarfen-for-woocommerce' ); ?>">
-                            <svg style="max-height: 50px" class="w-4 h-4 mr-2 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        title="<?php esc_attr_e( 'Configure Hepsijet Integration Settings', 'hezarfen-for-woocommerce' ); ?>">
+                            <svg class="w-4 h-4 mr-2 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
-                            <?php esc_html_e( 'SMS Settings', 'hezarfen-for-woocommerce' ); ?>
-                            <svg style="max-height: 50px" class="w-3 h-3 ml-1 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                        </a>
-                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen' ) ); ?>" 
-                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-all duration-200 group" 
-                        target="_blank"
-                        title="<?php esc_attr_e( 'Watch training videos to learn how to use Hezarfen', 'hezarfen-for-woocommerce' ); ?>">
-                            <svg style="max-height: 50px" class="w-4 h-4 mr-2 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <?php esc_html_e( 'Training Videos', 'hezarfen-for-woocommerce' ); ?>
-                            <svg style="max-height: 50px" class="w-3 h-3 ml-1 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                        </a>
-                    </div>
+                            <?php esc_html_e( 'Hepsijet Integration Settings', 'hezarfen-for-woocommerce' ); ?>
+                           <svg style="max-height: 50px" class="w-3 h-3 ml-1 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                           </svg>
+                       </a>
+                       <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=sms_settings' ) ); ?>" 
+                       class="hezarfen-responsive-btn inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all duration-200 group" 
+                       target="_blank"
+                       title="<?php esc_attr_e( 'Configure SMS automation for order status changes', 'hezarfen-for-woocommerce' ); ?>">
+                           <svg style="max-height: 50px" class="w-4 h-4 mr-2 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                           </svg>
+                           <?php esc_html_e( 'SMS Settings', 'hezarfen-for-woocommerce' ); ?>
+                           <svg style="max-height: 50px" class="w-3 h-3 ml-1 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                           </svg>
+                       </a>
+                       <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen' ) ); ?>" 
+                       class="hezarfen-responsive-btn inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-all duration-200 group" 
+                       target="_blank"
+                       title="<?php esc_attr_e( 'Watch training videos to learn how to use Hezarfen', 'hezarfen-for-woocommerce' ); ?>">
+                           <svg style="max-height: 50px" class="w-4 h-4 mr-2 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                           </svg>
+                           <?php esc_html_e( 'Training Videos', 'hezarfen-for-woocommerce' ); ?>
+                           <svg style="max-height: 50px" class="w-3 h-3 ml-1 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                           </svg>
+                       </a>
+                   </div>
                     <?php
                     // Get Hepsijet shipments from encapsulated meta data
                     $order = wc_get_order($order_id);
@@ -546,12 +740,15 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                 $shipment_details = $shipment_args->shipment_details;
                                                 
                                                 // Extract data from encapsulated JSON meta
+                                                $packages = $shipment_details['packages'] ?? null;
                                                 $package_count = $shipment_details['package_count'] ?? null;
                                                 $desi = $shipment_details['desi'] ?? null;
                                                 $delivery_no = $shipment_details['delivery_no'] ?? null;
                                                 $cancelled_at = $shipment_details['cancelled_at'] ?? null;
                                                 $cancel_reason = $shipment_details['cancel_reason'] ?? null;
                                                 $status = $shipment_details['status'] ?? 'active';
+                                                $is_return = $shipment_details['is_return'] ?? false;
+                                                $planned_pickup_date = $shipment_details['planned_pickup_date'] ?? null;
                                                 
                                                 // Use tracking number as fallback for delivery_no
                                                 $effective_delivery_no = $delivery_no ?: $shipment_args->tracking_num;
@@ -562,6 +759,9 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                 <tr data-delivery_no="<?php echo esc_attr($effective_delivery_no); ?>" data-order_id="<?php echo esc_attr($order_id); ?>" class="<?php echo $is_cancelled ? 'bg-gray-100 opacity-60' : 'bg-white'; ?> border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                                     <th scope="row" class="px-6 py-4 font-medium <?php echo $is_cancelled ? 'text-gray-500 line-through' : 'text-gray-900'; ?> whitespace-nowrap dark:text-white">
                                                         <?php echo esc_html($shipment_args->courier_title); ?>
+                                                        <?php if ($is_return): ?>
+                                                            <span class="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full"><?php esc_html_e('Return by appointment', 'hezarfen-for-woocommerce'); ?></span>
+                                                        <?php endif; ?>
                                                         <?php if ($is_cancelled): ?>
                                                             <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full"><?php esc_html_e('Cancelled', 'hezarfen-for-woocommerce'); ?></span>
                                                         <?php elseif ($is_delivered): ?>
@@ -569,23 +769,73 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                                                         <?php elseif ($is_shipped): ?>
                                                             <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"><?php esc_html_e('Shipped', 'hezarfen-for-woocommerce'); ?></span>
                                                         <?php endif; ?>
+                                                        <?php if ($is_return && $planned_pickup_date): ?>
+                                                            <div class="text-xs text-purple-600 mt-1">
+                                                                <?php esc_html_e('Planned Pickup:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html(date('d.m.Y', strtotime($planned_pickup_date))); ?>
+                                                            </div>
+                                                        <?php endif; ?>
                                                     </th>
                                                     <td class="px-6 py-4">
                                                         <?php if ($is_cancelled): ?>
                                                             <div class="text-xs text-gray-500">
-                                                                <div class="line-through"><?php esc_html_e('Koli:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html($package_count ?: 'N/A'); ?></div>
-                                                                <div class="line-through"><?php esc_html_e('Desi:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html($desi ?: 'N/A'); ?></div>
+                                                                <?php if (!empty($packages) && is_array($packages)): ?>
+                                                                    <!-- Yeni format: Her koli için ayrı desi -->
+                                                                    <?php foreach ($packages as $index => $package): ?>
+                                                                        <div class="line-through">
+                                                                            <?php printf(esc_html__('Koli %d:', 'hezarfen-for-woocommerce'), $index + 1); ?> 
+                                                                            <?php echo esc_html(number_format($package['desi'], 2)); ?> desi
+                                                                        </div>
+                                                                    <?php endforeach; ?>
+                                                                <?php else: ?>
+                                                                    <!-- Eski format: Toplam göster -->
+                                                                    <div class="line-through"><?php esc_html_e('Koli:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html($package_count ?: 'N/A'); ?></div>
+                                                                    <div class="line-through"><?php esc_html_e('Desi:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html($desi ?: 'N/A'); ?></div>
+                                                                <?php endif; ?>
                                                                 <div class="text-red-600 font-medium mt-1"><?php esc_html_e('Cancelled:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html(date('d/m/Y H:i', strtotime($cancelled_at))); ?></div>
                                                             </div>
                                                         <?php else: ?>
                                                             <div class="text-xs">
-                                                                <div><?php esc_html_e('Koli:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html($package_count ?: 'N/A'); ?></div>
-                                                                <div><?php esc_html_e('Desi:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html($desi ?: 'N/A'); ?></div>
+                                                                <?php if (!empty($packages) && is_array($packages)): ?>
+                                                                    <!-- Yeni format: Her koli için ayrı desi -->
+                                                                    <?php foreach ($packages as $index => $package): ?>
+                                                                        <div class="mb-0.5">
+                                                                            <span class="font-medium"><?php printf(esc_html__('Koli %d:', 'hezarfen-for-woocommerce'), $index + 1); ?></span> 
+                                                                            <?php echo esc_html(number_format($package['desi'], 2)); ?> desi
+                                                                        </div>
+                                                                    <?php endforeach; ?>
+                                                                <?php else: ?>
+                                                                    <!-- Eski format: Toplam göster -->
+                                                                    <div><?php esc_html_e('Koli:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html($package_count ?: 'N/A'); ?></div>
+                                                                    <div><?php esc_html_e('Desi:', 'hezarfen-for-woocommerce'); ?> <?php echo esc_html($desi ?: 'N/A'); ?></div>
+                                                                <?php endif; ?>
                                                             </div>
                                                         <?php endif; ?>
                                                     </td>
                                                     <td class="actions px-6 py-4">
-                                                        <?php if ($is_cancelled): ?>
+                                                        <?php if ($is_return): ?>
+                                                            <!-- Return shipment: show copyable barcode number instead of barcode button -->
+                                                            <div class="flex flex-col gap-2">
+                                                                <div class="flex items-center gap-2 bg-purple-50 border border-purple-200 px-3 py-2 rounded">
+                                                                    <span class="font-mono text-sm font-semibold text-purple-800"><?php echo esc_html($effective_delivery_no); ?></span>
+                                                                    <button type="button" class="copy-delivery-no cursor-pointer hover:text-purple-600 text-purple-500" data-delivery_no="<?php echo esc_attr($effective_delivery_no); ?>" title="<?php esc_attr_e('Copy', 'hezarfen-for-woocommerce'); ?>">
+                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                                <p class="text-xs text-gray-500 italic"><?php esc_html_e('Share this code with your customer', 'hezarfen-for-woocommerce'); ?></p>
+                                                                <div class="flex gap-1 flex-wrap">
+                                                                    <button type="button" data-delivery_no="<?php echo esc_attr($effective_delivery_no); ?>" data-order_id="<?php echo esc_attr($order_id); ?>" class="check-hepsijet-details cursor-pointer focus:outline-none hover:opacity-80 bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                                                                        <?php esc_html_e('Details', 'hezarfen-for-woocommerce'); ?>
+                                                                    </button>
+                                                                    <?php if (!$is_cancelled): ?>
+                                                                        <button type="button" data-delivery_no="<?php echo esc_attr($effective_delivery_no); ?>" data-order_id="<?php echo esc_attr($order_id); ?>" class="cancel-hepsijet-shipment cursor-pointer focus:outline-none hover:opacity-80 bg-red-600 text-white px-2 py-1 rounded text-xs">
+                                                                            <?php esc_html_e('Cancel', 'hezarfen-for-woocommerce'); ?>
+                                                                        </button>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            </div>
+                                                        <?php elseif ($is_cancelled): ?>
                                                             <div class="flex gap-1 flex-wrap">
                                                                 <span class="px-2 py-1 bg-gray-300 text-gray-600 rounded text-xs cursor-not-allowed">
                                                                     <?php esc_html_e('Barcode', 'hezarfen-for-woocommerce'); ?>
@@ -704,7 +954,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
                 </div>
             </div>
             <!-- Modern Confirmation Modal -->
-            <div id="modal-body" class="hez-modal-overlay hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-description">
+            <div id="modal-body" class="hez-modal-overlay hidden inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center" style="position: fixed" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-description">
                 <div class="hez-modal-content bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0">
                     <div class="p-6">
                         <!-- Modal Header -->
@@ -747,7 +997,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
             </div>
 
             <!-- Hepsijet Shipment Details Modal -->
-            <div id="hepsijet-details-modal" class="hez-modal-overlay hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center" role="dialog" aria-modal="true">
+            <div id="hepsijet-details-modal" class="hez-modal-overlay hidden inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center" style="position: fixed" role="dialog" aria-modal="true">
                 <div class="hez-modal-content bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0">
                     <div class="p-6">
                         <!-- Modal Header -->
@@ -780,7 +1030,7 @@ use \Hezarfen\ManualShipmentTracking\Helper;
             </div>
 
             <!-- Hepsijet Barcode Label Modal -->
-            <div id="hepsijet-barcode-modal" class="hez-modal-overlay hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center" role="dialog" aria-modal="true">
+            <div id="hepsijet-barcode-modal" class="hez-modal-overlay hidden inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center" style="position: fixed" role="dialog" aria-modal="true">
                 <div class="hez-modal-content bg-white rounded-lg shadow-xl max-w-7xl w-full h-5/6 mx-4 transform transition-all duration-300 scale-95 opacity-0">
                     <div class="p-6 h-full">
                         <!-- Modal Header -->
@@ -832,3 +1082,37 @@ use \Hezarfen\ManualShipmentTracking\Helper;
         ?>
     </div>
 </div>
+
+<script type="text/javascript">
+jQuery(function($) {
+    'use strict';
+    
+    const $warehouse = $('#hepsijet-warehouse');
+    const serverSideData = $warehouse.attr('data-loaded-server-side');
+    
+    if (serverSideData === 'true' && $warehouse.find('option').length > 0) {
+        // Save the server-side HTML
+        const serverSideHTML = $warehouse.html();
+        const serverSideOptions = $warehouse.find('option').length;
+        
+        // Watch for changes and restore if needed
+        let checkCount = 0;
+        const checkInterval = setInterval(function() {
+            checkCount++;
+            
+            const currentOptions = $warehouse.find('option').length;
+            
+            // If dropdown was emptied or options changed significantly
+            if (currentOptions < serverSideOptions) {
+                $warehouse.html(serverSideHTML);
+                $warehouse.attr('data-loaded-server-side', 'true');
+            }
+            
+            // Stop checking after 5 seconds
+            if (checkCount > 50) {
+                clearInterval(checkInterval);
+            }
+        }, 100);
+    }
+});
+</script>
