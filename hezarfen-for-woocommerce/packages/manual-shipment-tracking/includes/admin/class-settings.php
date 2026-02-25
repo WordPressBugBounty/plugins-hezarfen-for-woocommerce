@@ -26,6 +26,7 @@ class Settings {
 	const OPT_ORDER_STATUS_ID          = 'hezarfen_mst_custom_order_status_id';
 	const OPT_COURIER_CUSTOM_META      = 'hezarfen_mst_courier_company_custom_meta';
 	const OPT_TRACKING_NUM_CUSTOM_META = 'hezarfen_mst_tracking_num_custom_meta';
+	const OPT_DISABLED_COURIERS        = 'hezarfen_mst_disabled_couriers';
 
 	const RECOG_TYPE_SUPPORTED_PLUGINS = 'supported_plugins';
 	const RECOG_TYPE_CUSTOM_META       = 'custom_meta';
@@ -36,14 +37,12 @@ class Settings {
 	 * @return void
 	 */
 	public function __construct() {
-		self::add_enable_disable_option();
-
 		add_filter( 'woocommerce_get_sections_' . self::HEZARFEN_WC_SETTINGS_ID, array( __CLASS__, 'add_section' ) );
+		add_filter( 'woocommerce_get_settings_' . self::HEZARFEN_WC_SETTINGS_ID, array( __CLASS__, 'add_settings_to_section' ), 10, 2 );
+		add_action( 'woocommerce_settings_save_hezarfen', array( __CLASS__, 'settings_save' ) );
 
 		if ( Manual_Shipment_Tracking::is_enabled() ) {
 			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_and_styles' ) );
-			add_filter( 'woocommerce_get_settings_' . self::HEZARFEN_WC_SETTINGS_ID, array( __CLASS__, 'add_settings_to_section' ), 10, 2 );
-			add_action( 'woocommerce_settings_save_hezarfen', array( __CLASS__, 'settings_save' ) );
 		}
 
 		// Add Hepsijet integration settings
@@ -59,31 +58,9 @@ class Settings {
 		
 		// Custom field type for cache clear button
 		add_action( 'woocommerce_admin_field_hepsijet_cache_button', array( __CLASS__, 'render_cache_clear_button' ) );
-	}
 
-	/**
-	 * Adds a checkbox to enable/disable the package.
-	 * 
-	 * @return void
-	 */
-	private static function add_enable_disable_option() {
-		add_filter(
-			'hezarfen_general_settings',
-			function ( $hezarfen_settings ) {
-				$hezarfen_settings[] = array(
-					'title'   => __(
-						'Enable Manual Shipment Tracking feature',
-						'hezarfen-for-woocommerce'
-					),
-					'type'    => 'checkbox',
-					'desc'    => '',
-					'id'      => Manual_Shipment_Tracking::ENABLE_DISABLE_OPTION,
-					'default' => 'yes',
-				);
-	
-				return $hezarfen_settings;
-			} 
-		);
+		// Custom field type for courier visibility
+		add_action( 'woocommerce_admin_field_hezarfen_courier_visibility', array( __CLASS__, 'render_courier_visibility_setting' ) );
 	}
 
 	/**
@@ -94,9 +71,7 @@ class Settings {
 	 * @return array<string, string>
 	 */
 	public static function add_section( $hezarfen_sections ) {
-		if ( Manual_Shipment_Tracking::is_enabled() ) {
-			$hezarfen_sections[ self::SECTION ] = __( 'Manual Shipment Tracking', 'hezarfen-for-woocommerce' );
-		}
+		$hezarfen_sections[ self::SECTION ] = __( 'Manual Shipment Tracking', 'hezarfen-for-woocommerce' );
 
 		return $hezarfen_sections;
 	}
@@ -111,50 +86,73 @@ class Settings {
 	 */
 	public static function add_settings_to_section( $settings, $current_section ) {
 		if ( self::SECTION === $current_section ) {
-			add_action( 'woocommerce_admin_field_hezarfen_mst_netgsm_sms_content_textarea', array( __CLASS__, 'render_netgsm_sms_content_setting' ) );
-
-			foreach ( Manual_Shipment_Tracking::notification_providers() as $id => $class ) {
-				$notice = '';
-
-				if ( ! $class::is_plugin_ready() ) {
-					/* translators: %s SMS notification provider */
-					$notice = sprintf( __( 'In order to %1$s integration work, the %2$s plugin must be activated.', 'hezarfen-for-woocommerce' ), $class::$title, $class::$title );
-				}
-
-				if ( Netgsm::$id === $id && ! Netgsm::is_netgsm_order_status_change_notif_active() ) {
-					$notice = __( 'In order to NetGSM integration work, the "send SMS to the customer when order status changed" option must be activated from the NetGSM plugin settings.', 'hezarfen-for-woocommerce' );
-				}
-
-				$label                         = $notice ? sprintf( '%s (%s)', $class::$title, $notice ) : $class::$title;
-				$notification_providers[ $id ] = $label;
-			}
-
-			return array(
+			$mst_settings = array(
 				array(
 					'type'  => 'title',
 					'title' => __( 'Manual Shipment Tracking General Settings', 'hezarfen-for-woocommerce' ),
 				),
 				array(
+					'title'   => __( 'Enable Manual Shipment Tracking feature', 'hezarfen-for-woocommerce' ),
+					'type'    => 'checkbox',
+					'desc'    => '',
+					'id'      => Manual_Shipment_Tracking::ENABLE_DISABLE_OPTION,
+					'default' => 'yes',
+				),
+			);
+
+			if ( Manual_Shipment_Tracking::is_enabled() ) {
+				add_action( 'woocommerce_admin_field_hezarfen_mst_netgsm_sms_content_textarea', array( __CLASS__, 'render_netgsm_sms_content_setting' ) );
+
+				foreach ( Manual_Shipment_Tracking::notification_providers() as $id => $class ) {
+					$notice = '';
+
+					if ( ! $class::is_plugin_ready() ) {
+						/* translators: %s SMS notification provider */
+						$notice = sprintf( __( 'In order to %1$s integration work, the %2$s plugin must be activated.', 'hezarfen-for-woocommerce' ), $class::$title, $class::$title );
+					}
+
+					if ( Netgsm::$id === $id && ! Netgsm::is_netgsm_order_status_change_notif_active() ) {
+						$notice = __( 'In order to NetGSM integration work, the "send SMS to the customer when order status changed" option must be activated from the NetGSM plugin settings.', 'hezarfen-for-woocommerce' );
+					}
+
+					$label                         = $notice ? sprintf( '%s (%s)', $class::$title, $notice ) : $class::$title;
+					$notification_providers[ $id ] = $label;
+				}
+
+				$mst_settings[] = array(
 					'type'  => 'checkbox',
 					'title' => __( 'Show Shipment Tracking column on My Account > Orders page', 'hezarfen-for-woocommerce' ),
 					'id'    => self::OPT_SHOW_TRACKING_COLUMN,
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type' => 'sectionend',
 					'id'   => 'hezarfen_mst_general',
-				),
-				array(
+				);
+				$mst_settings[] = array(
+					'type'  => 'title',
+					'title' => __( 'Courier Company Visibility', 'hezarfen-for-woocommerce' ),
+					'desc'  => __( 'Select which courier companies will be shown on the order editing screen. Unchecked couriers will be hidden.', 'hezarfen-for-woocommerce' ),
+				);
+				$mst_settings[] = array(
+					'type' => 'hezarfen_courier_visibility',
+					'id'   => self::OPT_DISABLED_COURIERS,
+				);
+				$mst_settings[] = array(
+					'type' => 'sectionend',
+					'id'   => 'hezarfen_mst_courier_visibility',
+				);
+				$mst_settings[] = array(
 					'type'  => 'title',
 					'title' => __( 'Advanced Settings', 'hezarfen-for-woocommerce' ),
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type'  => 'checkbox',
 					'title' => __( "Recognize third party plugins' data", 'hezarfen-for-woocommerce' ),
 					'desc'  => __( "If you used a shipment tracking plugin before, check this to recognize your old shipment tracking plugin's data.", 'hezarfen-for-woocommerce' ),
 					'id'    => self::OPT_RECOG_DATA,
 					'class' => 'recogize-data',
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type'    => 'radio',
 					'title'   => __( 'Recognition type', 'hezarfen-for-woocommerce' ),
 					'id'      => self::OPT_RECOGNITION_TYPE,
@@ -164,42 +162,49 @@ class Settings {
 						self::RECOG_TYPE_SUPPORTED_PLUGINS => sprintf( __( 'Recognize supported plugins: (%s)', 'hezarfen-for-woocommerce' ), implode( ', ', Third_Party_Data_Support::SUPPORTED_PLUGINS ) ),
 						self::RECOG_TYPE_CUSTOM_META       => __( 'Recognize custom post meta data', 'hezarfen-for-woocommerce' ),
 					),
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type'        => 'text',
 					'title'       => __( 'Order status ID (optional)', 'hezarfen-for-woocommerce' ),
 					'id'          => self::OPT_ORDER_STATUS_ID,
 					'class'       => 'recognition custom-meta',
 					'placeholder' => __( 'Enter order status id. E.g: wc-shipped', 'hezarfen-for-woocommerce' ),
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type'        => 'text',
 					'title'       => __( 'Courier company post meta key', 'hezarfen-for-woocommerce' ),
 					'id'          => self::OPT_COURIER_CUSTOM_META,
 					'class'       => 'recognition custom-meta',
 					'placeholder' => __( 'Enter post meta key for courier company', 'hezarfen-for-woocommerce' ),
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type'        => 'text',
 					'title'       => __( 'Tracking number post meta key', 'hezarfen-for-woocommerce' ),
 					'id'          => self::OPT_TRACKING_NUM_CUSTOM_META,
 					'class'       => 'recognition custom-meta',
 					'placeholder' => __( 'Enter post meta key for tracking number', 'hezarfen-for-woocommerce' ),
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type' => 'sectionend',
 					'id'   => 'hezarfen_mst_advanced',
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type'  => 'title',
 					'title' => __( 'SMS Notification Settings (Legacy)', 'hezarfen-for-woocommerce' ),
 					'desc'  => '<div style="background: #fff3cd; border: 2px solid #f39c12; border-radius: 6px; padding: 15px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="display: flex; align-items: center; margin-bottom: 10px;"><span style="font-size: 20px; margin-right: 8px;">⚠️</span><strong style="color: #d68910; font-size: 16px;">' . __( 'Important Notice:', 'hezarfen-for-woocommerce' ) . '</strong></div><p style="margin: 0 0 12px 0; line-height: 1.5;">' . sprintf( __( 'SMS automation settings have been moved to a new, more advanced system. You can now configure multiple SMS rules with different triggers and conditions. %sManage SMS Rules%s', 'hezarfen-for-woocommerce' ), '<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=hezarfen&section=sms_settings' ) ) . '" style="color: #0073aa; text-decoration: none; font-weight: bold; border-bottom: 1px solid #0073aa;">', '</a>' ) . '</p><p style="margin: 0; color: #856404; font-style: italic;">' . __( 'SMS settings have been moved to the new SMS automation system. This legacy section has been removed.', 'hezarfen-for-woocommerce' ) . '</p></div>',
-				),
-				array(
+				);
+				$mst_settings[] = array(
 					'type' => 'sectionend',
 					'id'   => 'hezarfen_mst_sms_notification',
-				)
-			);
+				);
+			} else {
+				$mst_settings[] = array(
+					'type' => 'sectionend',
+					'id'   => 'hezarfen_mst_general',
+				);
+			}
+
+			return $mst_settings;
 		}
 
 		return $settings;
@@ -271,6 +276,16 @@ class Settings {
 			if ( 'wc-' !== substr( $_POST[ self::OPT_ORDER_STATUS_ID ], 0, 3 ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$_POST[ self::OPT_ORDER_STATUS_ID ] = sanitize_key( 'wc-' . $_POST[ self::OPT_ORDER_STATUS_ID ] );
 			}
+		}
+
+		// Save disabled couriers only if the visibility section was actually rendered.
+		if ( ! empty( $_POST['hezarfen_mst_courier_visibility_present'] ) ) {
+			$all_courier_ids = array_filter( array_keys( Manual_Shipment_Tracking::courier_companies() ) );
+			$checked         = isset( $_POST['hezarfen_mst_enabled_couriers'] ) && is_array( $_POST['hezarfen_mst_enabled_couriers'] )
+				? array_map( 'sanitize_text_field', $_POST['hezarfen_mst_enabled_couriers'] )
+				: array();
+			$disabled = array_values( array_diff( $all_courier_ids, $checked ) );
+			update_option( self::OPT_DISABLED_COURIERS, $disabled );
 		}
 
 		// phpcs:enable
@@ -713,5 +728,103 @@ class Settings {
 				)
 			) );
 		}
+	}
+
+	/**
+	 * Renders the courier company visibility setting field.
+	 *
+	 * @param array $value Field settings.
+	 * @return void
+	 */
+	public static function render_courier_visibility_setting( $value ) {
+		$all_couriers       = Manual_Shipment_Tracking::courier_companies();
+		$disabled_couriers  = get_option( self::OPT_DISABLED_COURIERS, array() );
+		if ( ! is_array( $disabled_couriers ) ) {
+			$disabled_couriers = array();
+		}
+		?>
+		<input type="hidden" name="hezarfen_mst_courier_visibility_present" value="1" />
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label><?php esc_html_e( 'Enabled Courier Companies', 'hezarfen-for-woocommerce' ); ?></label>
+			</th>
+			<td class="forminp">
+				<div style="margin-bottom: 10px;">
+					<button type="button" id="hez-courier-select-all" class="button button-small">
+						<?php esc_html_e( 'Select All', 'hezarfen-for-woocommerce' ); ?>
+					</button>
+					<button type="button" id="hez-courier-deselect-all" class="button button-small">
+						<?php esc_html_e( 'Deselect All', 'hezarfen-for-woocommerce' ); ?>
+					</button>
+				</div>
+				<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; max-width: 800px;">
+					<?php
+					// Render Kargokit (hepsijet-entegrasyon) first with special styling.
+					if ( isset( $all_couriers['hepsijet-entegrasyon'] ) ) :
+						$kargokit_checked = ! in_array( 'hepsijet-entegrasyon', $disabled_couriers, true );
+						$kargokit_logo    = HEZARFEN_MST_COURIER_LOGO_URL . $all_couriers['hepsijet-entegrasyon']::$logo;
+					?>
+						<label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 2px solid <?php echo $kargokit_checked ? '#2563eb' : '#93c5fd'; ?>; border-radius: 6px; cursor: pointer; background: <?php echo $kargokit_checked ? '#eff6ff' : '#f0f9ff'; ?>; transition: all 0.2s; grid-column: span 2;" class="hez-courier-visibility-item hez-courier-kargokit">
+							<input type="checkbox"
+								name="hezarfen_mst_enabled_couriers[]"
+								value="hepsijet-entegrasyon"
+								<?php checked( $kargokit_checked ); ?>
+								style="margin: 0;" />
+							<span style="font-size: 13px; font-weight: 600; color: #1e40af;">Kargokit</span>
+							<img src="<?php echo esc_url( $kargokit_logo ); ?>"
+								alt="Kargokit - hepsiJET"
+								style="max-height: 20px; max-width: 60px; object-fit: contain;"
+								loading="lazy" />
+							<span style="font-size: 10px; color: #3b82f6; background: #dbeafe; padding: 2px 6px; border-radius: 9999px;">
+								<?php esc_html_e( 'Free Integration', 'hezarfen-for-woocommerce' ); ?>
+							</span>
+						</label>
+					<?php endif; ?>
+					<?php foreach ( $all_couriers as $courier_id => $courier_class ) :
+						if ( empty( $courier_id ) || 'hepsijet-entegrasyon' === $courier_id ) {
+							continue;
+						}
+						$checked = ! in_array( $courier_id, $disabled_couriers, true );
+						$title   = $courier_class::get_title();
+						$logo    = HEZARFEN_MST_COURIER_LOGO_URL . $courier_class::$logo;
+					?>
+						<label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid <?php echo $checked ? '#2271b1' : '#ddd'; ?>; border-radius: 6px; cursor: pointer; background: <?php echo $checked ? '#f0f6fc' : '#fff'; ?>; transition: all 0.2s;" class="hez-courier-visibility-item">
+							<input type="checkbox"
+								name="hezarfen_mst_enabled_couriers[]"
+								value="<?php echo esc_attr( $courier_id ); ?>"
+								<?php checked( $checked ); ?>
+								style="margin: 0;" />
+							<img src="<?php echo esc_url( $logo ); ?>"
+								alt="<?php echo esc_attr( $title ); ?>"
+								style="max-height: 24px; max-width: 80px; object-fit: contain;"
+								loading="lazy" />
+							<span style="font-size: 12px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+								<?php echo esc_html( $title ); ?>
+							</span>
+						</label>
+					<?php endforeach; ?>
+				</div>
+
+				<script type="text/javascript">
+				jQuery(document).ready(function($) {
+					$('#hez-courier-select-all').on('click', function() {
+						$('.hez-courier-visibility-item input[type="checkbox"]').prop('checked', true).trigger('change');
+					});
+					$('#hez-courier-deselect-all').on('click', function() {
+						$('.hez-courier-visibility-item input[type="checkbox"]').prop('checked', false).trigger('change');
+					});
+					$('.hez-courier-visibility-item input[type="checkbox"]').on('change', function() {
+						var $label = $(this).closest('.hez-courier-visibility-item');
+						if ($(this).is(':checked')) {
+							$label.css({'border-color': '#2271b1', 'background': '#f0f6fc'});
+						} else {
+							$label.css({'border-color': '#ddd', 'background': '#fff'});
+						}
+					});
+				});
+				</script>
+			</td>
+		</tr>
+		<?php
 	}
 }
