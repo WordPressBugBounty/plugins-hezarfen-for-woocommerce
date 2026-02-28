@@ -6,7 +6,7 @@ Requires at least: 5.3
 Tested up to: 6.9
 Requires PHP: 7.0
 License: GPL2
-Stable tag: 2.8.0
+Stable tag: 2.8.2
 
 🚀 2 bin site! Kargo takip, ücretsiz Hepsijet Entegrasyonu (1-4 desi: 89,24TL+KDV - Hezarfen Pro gerekmez), Mesafeli Sözleşmeler, NetGSM sipariş SMS
 == Description ==
@@ -264,6 +264,12 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 15. Hesabım sayfasında siparişe ait oluşmuş sözleşmelerin gösterilmesi
 
 == Changelog ==
+= 2.8.2 - 2026-02-28 =
+* Memnuniyet değerlendirme
+
+= 2.8.1 - 2026-02-28 =
+* PHP uyarısı giderildi.
+
 = 2.8.0 - 2026-02-25 =
 * Kargokit - Hepsijet toplu barkod özelliği eklendi.
 * Belirli kargo firmalarını devre dışı bırakma özelliği eklendi.
