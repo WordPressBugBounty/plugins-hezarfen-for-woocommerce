@@ -54,13 +54,17 @@ class Hezarfen {
 		add_action( 'plugins_loaded', array( $this, 'define_constants' ) );
 		add_action( 'admin_notices', array( $this, 'show_migration_notice' ) );
 		add_action( 'admin_notices', array( $this, 'show_roadmap_contribution_notice' ) );
+		add_action( 'admin_notices', array( $this, 'show_compatibility_notices' ) );
+		add_action( 'admin_notices', array( $this, 'show_review_banner' ) );
 		add_action( 'wp_ajax_hezarfen_dismiss_roadmap_notice', array( $this, 'handle_dismiss_roadmap_notice' ) );
 		add_action( 'wp_ajax_hezarfen_dismiss_review', array( $this, 'handle_dismiss_review' ) );
+		add_action( 'wp_ajax_hezarfen_dismiss_theme_checkout_notice', array( $this, 'handle_dismiss_theme_checkout_notice' ) );
+		add_action( 'wp_ajax_hezarfen_dismiss_hosting_notice', array( $this, 'handle_dismiss_hosting_notice' ) );
 		add_action( 'plugins_loaded', array( $this, 'force_enable_address2_field' ) );
 		add_filter( 'woocommerce_get_settings_pages', array( $this, 'add_hezarfen_setting_page' ) );
 		add_filter( 'woocommerce_get_country_locale', array( $this, 'modify_tr_locale' ), PHP_INT_MAX - 2 );
 		add_filter('woocommerce_rest_prepare_shop_order_object', array( $this, 'add_virtual_order_metas_to_metadata' ), 10, 2);
-		
+
 		// Register roadmap voting AJAX action
 		add_action( 'wp_ajax_hezarfen_submit_roadmap_votes', array( $this, 'handle_roadmap_vote_submission_proxy' ) );
 	}
@@ -523,6 +527,293 @@ class Hezarfen {
 			update_option( 'hezarfen_review_snoozed_until', time() + 30 * DAY_IN_SECONDS );
 		}
 
+		wp_send_json_success();
+	}
+
+	/**
+	 * Show compatibility notices for Woodmart theme and SiteGround/Cloudways hosting.
+	 *
+	 * @return void
+	 */
+	public function show_compatibility_notices() {
+		if ( ! is_admin() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$this->show_woodmart_notice();
+		$this->show_hosting_notice();
+	}
+
+	/**
+	 * Show review banner on all admin pages.
+	 *
+	 * @return void
+	 */
+	public function show_review_banner() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		// Permanently dismissed.
+		if ( get_option( 'hezarfen_review_dismissed', false ) ) {
+			return;
+		}
+
+		// Max 3 impressions.
+		$shown_count = (int) get_option( 'hezarfen_review_shown_count', 0 );
+		if ( $shown_count >= 3 ) {
+			return;
+		}
+
+		// Snoozed (30-day cooldown after "Not Now" or "X").
+		$snoozed_until = (int) get_option( 'hezarfen_review_snoozed_until', 0 );
+		if ( $snoozed_until > time() ) {
+			return;
+		}
+
+		// Features must be actively in use.
+		if ( ! \Hezarfen\Inc\Feature_Status::are_features_active() ) {
+			return;
+		}
+
+		$nonce = wp_create_nonce( 'hezarfen_dismiss_review' );
+		$review_url = 'https://wordpress.org/support/plugin/hezarfen-for-woocommerce/reviews/#new-post';
+		?>
+		<div id="hezarfen-review-banner" class="notice notice-info is-dismissible" style="padding:12px 16px;border-left-color:#2271b1;">
+			<!-- Step 1: Micro question -->
+			<div id="hezarfen-review-step1">
+				<p style="font-size:14px;margin:0 0 10px;">
+					<strong>Hezarfen for WooCommerce:</strong>
+					<?php esc_html_e( 'Everything running smoothly with Hezarfen?', 'hezarfen-for-woocommerce' ); ?>
+				</p>
+				<p style="margin:0;">
+					<button type="button" class="button button-small" id="hezarfen-review-yes" style="margin-right:6px;">&#128077; <?php esc_html_e( 'Yes', 'hezarfen-for-woocommerce' ); ?></button>
+					<button type="button" class="button button-small" id="hezarfen-review-no">&#128078; <?php esc_html_e( 'No', 'hezarfen-for-woocommerce' ); ?></button>
+				</p>
+			</div>
+
+			<!-- Step 2a: Review prompt (shown after Yes) -->
+			<div id="hezarfen-review-step2-yes" style="display:none;">
+				<p style="font-size:14px;margin:0 0 4px;">
+					<strong><?php esc_html_e( 'Great! Would you like to share your experience with a short review?', 'hezarfen-for-woocommerce' ); ?></strong>
+				</p>
+				<p style="color:#50575e;margin:0 0 4px;font-size:13px;"><?php esc_html_e( 'Your review helps us keep developing the plugin.', 'hezarfen-for-woocommerce' ); ?></p>
+				<p style="color:#787c82;margin:0 0 10px;font-size:13px;font-style:italic;"><?php esc_html_e( 'You can use your free WordPress.org account to write a review.', 'hezarfen-for-woocommerce' ); ?></p>
+				<p style="margin:0;">
+					<a href="<?php echo esc_url( $review_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary button-small" id="hezarfen-review-go">&#11088; <?php esc_html_e( 'Write a Review', 'hezarfen-for-woocommerce' ); ?></a>
+					<button type="button" class="button button-small" id="hezarfen-review-later" style="margin-left:6px;"><?php esc_html_e( 'Not Now', 'hezarfen-for-woocommerce' ); ?></button>
+				</p>
+			</div>
+
+			<!-- Step 2b: Support prompt (shown after No) -->
+			<div id="hezarfen-review-step2-no" style="display:none;">
+				<p style="font-size:14px;margin:0 0 10px;">
+					<strong><?php esc_html_e( 'We\'d love to help! Let us know what we can improve.', 'hezarfen-for-woocommerce' ); ?></strong>
+				</p>
+				<p style="margin:0;">
+					<a href="https://intense.com.tr/whatsapp-destek" target="_blank" rel="noopener noreferrer" class="button button-small" id="hezarfen-review-support" style="background:#25D366;border-color:#25D366;color:#fff;">&#128172; <?php esc_html_e( 'WhatsApp Support', 'hezarfen-for-woocommerce' ); ?></a>
+				</p>
+			</div>
+		</div>
+
+		<script>
+		(function(){
+			var banner = document.getElementById('hezarfen-review-banner');
+			if (!banner) return;
+			var step1 = document.getElementById('hezarfen-review-step1');
+			var step2Yes = document.getElementById('hezarfen-review-step2-yes');
+			var step2No = document.getElementById('hezarfen-review-step2-no');
+			var nonce = '<?php echo esc_js( $nonce ); ?>';
+
+			function hide() {
+				banner.style.transition = 'opacity .3s';
+				banner.style.opacity = '0';
+				setTimeout(function(){ banner.remove(); }, 300);
+			}
+
+			function send(type) {
+				var xhr = new XMLHttpRequest();
+				xhr.open('POST', ajaxurl);
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				xhr.send('action=hezarfen_dismiss_review&nonce=' + nonce + '&type=' + type);
+			}
+
+			function showStep(el) {
+				step1.style.display = 'none';
+				el.style.display = '';
+			}
+
+			document.getElementById('hezarfen-review-yes').addEventListener('click', function(){ showStep(step2Yes); send('snooze_short'); });
+			document.getElementById('hezarfen-review-no').addEventListener('click', function(){ showStep(step2No); send('snooze'); });
+			document.getElementById('hezarfen-review-support').addEventListener('click', function(){ hide(); });
+			document.getElementById('hezarfen-review-go').addEventListener('click', function(){ send('snooze_short'); });
+			document.getElementById('hezarfen-review-later').addEventListener('click', function(){ send('snooze'); hide(); });
+
+			// WP native dismiss button (is-dismissible)
+			banner.addEventListener('click', function(e) {
+				if (e.target.classList.contains('notice-dismiss')) {
+					send('snooze');
+				}
+			});
+		})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Show theme checkout fields compatibility notice for Woodmart and Flatsome.
+	 *
+	 * @return void
+	 */
+	private function show_woodmart_notice() {
+		if ( get_option( 'hezarfen_theme_checkout_notice_dismissed', false ) ) {
+			return;
+		}
+
+		// Check if district/neighborhood feature is enabled.
+		if ( 'yes' !== apply_filters( 'hezarfen_enable_district_neighborhood_fields', get_option( 'hezarfen_enable_district_neighborhood_fields', 'yes' ) ) ) {
+			return;
+		}
+
+		$notice_message = $this->get_theme_checkout_notice_message();
+		if ( ! $notice_message ) {
+			return;
+		}
+
+		?>
+		<div class="notice notice-warning is-dismissible hezarfen-theme-checkout-notice">
+			<p>
+				<strong>Hezarfen for WooCommerce:</strong>
+				<?php echo wp_kses( $notice_message, array( 'strong' => array() ) ); ?>
+			</p>
+		</div>
+		<script type="text/javascript">
+		jQuery(document).ready(function($) {
+			$(document).on('click', '.hezarfen-theme-checkout-notice .notice-dismiss', function() {
+				$.post(ajaxurl, {
+					action: 'hezarfen_dismiss_theme_checkout_notice',
+					nonce: '<?php echo esc_js( wp_create_nonce( 'hezarfen_dismiss_theme_checkout_notice' ) ); ?>'
+				});
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Get theme-specific checkout compatibility notice message.
+	 *
+	 * @return string|false Notice message or false if no notice needed.
+	 */
+	private function get_theme_checkout_notice_message() {
+		// Woodmart detection: only warn when checkout fields module is enabled.
+		if ( 'woodmart' === wp_get_theme()->get_stylesheet() || defined( 'WOODMART_THEME_DIR' ) ) {
+			$checkout_fields_enabled = function_exists( 'woodmart_get_opt' ) && woodmart_get_opt( 'checkout_fields' );
+
+			if ( $checkout_fields_enabled ) {
+				return __( '<strong>İlçe/mahalle seçimi zaten düzgün çalışıyorsa bu uyarıyı görmezden gelebilirsiniz.</strong> Woodmart teması tespit edildi. Woodmart\'ın "Checkout fields" (Ödeme Alanları) özelliği aktif olduğunda, Hezarfen\'in ilçe/mahalle seçimleri sayfa yenilenmeden düzgün çalışamaz. Hezarfen ilçe/mahalle özelliğini sorunsuz kullanmak için lütfen Woodmart ayarlarından "Checkout fields" modülünü devre dışı bırakın.', 'hezarfen-for-woocommerce' );
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Show SiteGround/Cloudways hosting compatibility notice.
+	 *
+	 * @return void
+	 */
+	private function show_hosting_notice() {
+		if ( get_option( 'hezarfen_hosting_notice_dismissed', false ) ) {
+			return;
+		}
+
+		// Check if district/neighborhood feature is enabled.
+		if ( 'yes' !== apply_filters( 'hezarfen_enable_district_neighborhood_fields', get_option( 'hezarfen_enable_district_neighborhood_fields', 'yes' ) ) ) {
+			return;
+		}
+
+		$hosting_provider = $this->detect_hosting_provider();
+
+		if ( ! $hosting_provider ) {
+			return;
+		}
+
+		?>
+		<div class="notice notice-warning is-dismissible hezarfen-hosting-notice">
+			<p>
+				<strong>Hezarfen for WooCommerce:</strong>
+				<?php
+				echo wp_kses(
+					sprintf(
+						/* translators: 1: hosting provider name, 2: API file path */
+						__( '<strong>İlçe/mahalle seçimi zaten düzgün çalışıyorsa bu uyarıyı görmezden gelebilirsiniz.</strong> %1$s hosting altyapısı kullandığınız için bu uyarı gösterilmektedir. %1$s doğrudan PHP dosyası erişimini engelleyebildiği için Hezarfen\'in ilçe/mahalle özelliği etkilenebilir. Sorun yaşarsanız %2$s dosyası için hosting panelinizden güvenlik istisnası tanımlayın veya hosting firmanızdan destek alın.', 'hezarfen-for-woocommerce' ),
+						esc_html( $hosting_provider ),
+						'<code>wp-content/plugins/hezarfen-for-woocommerce/api/get-mahalle-data.php</code>'
+					),
+					array( 'code' => array(), 'strong' => array() )
+				);
+				?>
+			</p>
+		</div>
+		<script type="text/javascript">
+		jQuery(document).ready(function($) {
+			$(document).on('click', '.hezarfen-hosting-notice .notice-dismiss', function() {
+				$.post(ajaxurl, {
+					action: 'hezarfen_dismiss_hosting_notice',
+					nonce: '<?php echo esc_js( wp_create_nonce( 'hezarfen_dismiss_hosting_notice' ) ); ?>'
+				});
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Detect if the site is hosted on SiteGround or Cloudways.
+	 *
+	 * @return string|false Hosting provider name or false if not detected.
+	 */
+	private function detect_hosting_provider() {
+		// SiteGround detection: SG Optimizer plugin or SG Security plugin.
+		if (
+			Helper::is_plugin_active( 'sg-cachepress/sg-cachepress.php' ) ||
+			Helper::is_plugin_active( 'sg-security/sg-security.php' ) ||
+			class_exists( '\SiteGround_Optimizer\Supercacher\Supercacher' )
+		) {
+			return 'SiteGround';
+		}
+
+		// Cloudways detection: Breeze plugin (Cloudways default cache plugin).
+		if (
+			Helper::is_plugin_active( 'breeze/breeze.php' ) ||
+			defined( 'STARTER_STARTER_VERSION' ) // Cloudways starter plugin.
+		) {
+			return 'Cloudways';
+		}
+
+		return false;
+	}
+
+	/**
+	 * Handle dismiss theme checkout notice AJAX request.
+	 *
+	 * @return void
+	 */
+	public function handle_dismiss_theme_checkout_notice() {
+		check_ajax_referer( 'hezarfen_dismiss_theme_checkout_notice', 'nonce' );
+		update_option( 'hezarfen_theme_checkout_notice_dismissed', true );
+		wp_send_json_success();
+	}
+
+	/**
+	 * Handle dismiss hosting notice AJAX request.
+	 *
+	 * @return void
+	 */
+	public function handle_dismiss_hosting_notice() {
+		check_ajax_referer( 'hezarfen_dismiss_hosting_notice', 'nonce' );
+		update_option( 'hezarfen_hosting_notice_dismissed', true );
 		wp_send_json_success();
 	}
 }
