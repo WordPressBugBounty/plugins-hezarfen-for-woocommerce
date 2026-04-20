@@ -1,12 +1,12 @@
 
 === Kargo Takip, Kargo SMS, İlçe Mahalle Sözleşme by Hezarfen ===
 Contributors: intenseyazilim, mucahitbal, mskapusuz
-Tags: kargo, kargo takip, woocommerce kargo, kargo entegrasyon, kargo sms
+Tags: kargo, kargo takip, kargo entegrasyonu, yurtiçi kargo, aras kargo
 Requires at least: 5.3
 Tested up to: 6.9
 Requires PHP: 7.0
 License: GPL2
-Stable tag: 2.9.0
+Stable tag: 2.10.1
 
 🚀 2 bin site! Kargo takip, ücretsiz Hepsijet Entegrasyonu (1-4 desi: 89,24TL+KDV - Hezarfen Pro gerekmez), Mesafeli Sözleşmeler, NetGSM sipariş SMS
 == Description ==
@@ -264,6 +264,12 @@ HepsiJET, Yurtiçi Kargo, Sürat Kargo, Aras Kargo, PTT Kargo, Trendyol Express,
 15. Hesabım sayfasında siparişe ait oluşmuş sözleşmelerin gösterilmesi
 
 == Changelog ==
+= 2.10.1 - 2026-04-20 =
+* Eklenti paketinden gereksiz geliştirici dosyaları kaldırıldı.
+
+= 2.10.0 - 2026-04-20 =
+* Fatura bilgileri sipariş e-postalarında, teşekkür sayfasında ve hesabım sipariş detayında gösterilmeye başlandı.
+
 = 2.9.0 - 2026-04-13 =
 * Sistem raporu ekranı eklendi.
 
